@@ -1,0 +1,343 @@
+nextjs-login.txt
+Nextjs NextAuth Prisma Login y Registro de usuario
+https://www.youtube.com/watch?v=iZDK42F2cTc
+
+Creamos el proyecto: 
+cd ~workspace
+npx create-next-app@latest
+✔ What is your project named? … react-nextjs-login
+✔ Would you like to use the recommended Next.js defaults? › No, customize settings
+✔ Would you like to use TypeScript? … No / Yes
+✔ Which linter would you like to use? › ESLint
+✔ Would you like to use React Compiler? … No / Yes
+✔ Would you like to use Tailwind CSS? … No / Yes
+✔ Would you like your code inside a `src/` directory? … No / Yes
+✔ Would you like to use App Router? (recommended) … No / Yes
+✔ Would you like to customize the import alias (`@/*` by default)? … No / Yes
+✔ Would you like to include AGENTS.md to guide coding agents to write up-to-date Next.js code? … No / Yes
+Creating a new Next.js app in /home/david-aviani/workspace/react-nextjs-login.
+Using npm.
+Initializing project with template: app-tw 
+Installing dependencies:
+- next
+- react
+- react-dom
+
+Installing devDependencies:
+- @tailwindcss/postcss
+- @types/node
+- @types/react
+- @types/react-dom
+- eslint
+- eslint-config-next
+- tailwindcss
+- typescript
+
+cd react-nextjs-login
+npm run dev
+desde el browser probar: 
+  http://localhost:3000/
+
+Abrimos la carpeta ~/workspace/react-nextjs-login con vsc:
+
+Modificamos page.tsx: creas el componente HomePage:
+export default function HomePage() {
+  return (
+    <div>HomePage</div>
+  );
+}
+
+En global.css, importamos estilos de tailwind:
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+https://www.prisma.io/docs/prisma-orm/quickstart/sqlite
+Instalamos prisma en desarrollo:
+npm i prisma -D
+
+Inicializa la base de datos SQLite:
+npx prisma init --datasource-provider sqlite
+Esto crea:
+  carpeta prisma/ y 
+  archivo .env que contiene: 
+    DATABASE_URL="file:./dev.db"
+
+Verificar que Prisma está inicializado en el proyecto:
+  prisma/
+    schema.prisma
+  prisma.config.ts
+  .env
+
+warn You already have a .gitignore file. Don't forget to add .env in it to not commit any private information.
+
+Next, set up your database:
+  1. Configure your DATABASE_URL in prisma.config.ts
+  2. Run prisma db pull to introspect your database.
+
+Then, define your models in prisma/schema.prisma and run prisma migrate dev to apply your schema.
+
+Learn more: https://pris.ly/getting-started
+
+2. Define Your Data Model
+In prisma/schema.prisma, define the tables (models) for your application. 
+
+Agregamos el primer modelo de prueba:
+model Prueba {
+  id    Int     @id @default(autoincrement())
+  email String  @unique
+  name  String?
+  observacion String?
+}
+
+3. Sync the Database:
+Run migrations to create the local SQLite file and generate the Prisma Client. 
+Command: npx prisma migrate dev --name inicialización
+Result: Creates the dev.db file and generates a type-safe client in your node_modules
+
+Para ver el contenido de la bdd:
+npx -p better-sqlite3 -p prisma prisma studio --url file:./dev.db
+http://localhost:51212
+
+En schema.prisma, agregamos la tabla usuario:
+ model User{
+  id Int @id @default (autoincrement())
+  email String @unique
+  username String @unique
+  password String 
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+ }
+Ejecuto:
+ npx prisma migrate dev --name creacionTablaUsuario
+
+Dentro de la carpeta prisma/migrations, 
+buscar los archivos migration.sql que contienen las modificaciones a la bdd.
+
+Armar un Singleton (tener una sola instancia) para la conexión a la base de datos:
+instalar:
+npm install @prisma/client@latest
+npm install @prisma/adapter-better-sqlite3
+npm install @types/better-sqlite3 -D
+
+En lib/prisma.ts:
+
+import 'dotenv/config';
+import { PrismaBetterSqlite3 } from '@prisma/adapter-better-sqlite3';
+import { PrismaClient } from '@prisma/client/extension';
+
+const url = process.env.DATABASE_URL ?? 'file:./dev.db';
+const adapter = new PrismaBetterSqlite3({ url });
+
+declare global {
+  var prisma: PrismaClient | undefined;
+}
+
+export const prisma = globalThis.prisma ?? new PrismaClient({ adapter });
+
+if (process.env.NODE_ENV !== 'production') {
+  globalThis.prisma = prisma;
+}
+
+-------------
+Pruebo que funciona un endpoint GET en mi aplicación:
+Creamos una nueva carpeta:
+ src/app/api/some
+Creamos el archivo route.js, dentro de la carpeta some creada:
+ import { NextResponse } from "next/server";
+
+ export function GET() {
+  return NextResponse.json({ message: 'Hello, world!' });
+ }
+ 
+ Probamos que funciona:
+ http://localhost:3000/api/some
+ 
+ Añadir un formulario para poder registrar un usuario:
+ Creamos las siguientes carpetas y archivos page.jsx:
+ app/
+   auth/
+     login/
+       page.jsx
+     register/
+       page.jsx
+
+En register/page.jsx poner:
+export default function RegisterPage() {
+  return (
+    <div>RegisterPage</div>
+  )
+}
+En register/page.jsx poner:
+export default function LoginPage() {
+  return (
+    <div>LoginPage</div>
+  )
+}
+
+Probamos que funciona:
+  http://localhost:3000/auth/register 
+  http://localhost:3000/auth/login
+
+----------------------------
+Conexión a git:
+git remote add origin https://github.com/santiferrerpetit/Aplicaciones-Especificas-de-Redes.git
+
+.gitignore
+        AGENTS.md
+        CLAUDE.md
+        git add README.md
+        dev.db
+	package-lock.json        
+git add eslint.config.mjs lib next.config.ts package.json postcss.config.mjs prisma.config.ts prisma public src tsconfig.json
+
+ git config --global user.email "valentinoaviani@gmail.com"
+ git config --global user.name "Valentino Aviani"
+
+git checkout -b develop
+git push -u origin develop
+----------------------------
+
+Utilizamos react hook form, para manejar los formularios:
+ver: https://react-hook-form.com/
+Instalamos react-hook-form:
+ npm i react-hook-form
+ 
+En: src/app/auth/register/page.tsx:
+
+"use client"
+import { useForm, SubmitHandler } from 'react-hook-form'
+
+type RegisterFormInputs = {
+  username: string
+  email: string
+  password: string
+  confirmPassword: string
+}
+
+export default function RegisterPage() {
+
+  const { register, handleSubmit } = useForm<RegisterFormInputs>()
+
+  const onSubmit: SubmitHandler<RegisterFormInputs> = data => {
+    console.log(data)
+  }
+
+  return (
+    <div>
+      <form onSubmit={handleSubmit(onSubmit)}>
+        <input
+          type="text"
+          placeholder="Username"
+          {...register('username', { required: true })}
+        />
+        <input
+          type="email"
+          placeholder="Email"
+          {...register('email', { required: true })}
+        />
+        <input
+          type="password"
+          placeholder="Password"
+          {...register('password', { required: true })}
+        />
+        <input
+          type="password"
+          placeholder="Confirmar Password"
+          {...register('confirmPassword', { required: true })}
+        />
+        <button type="submit">Register</button>
+      </form>
+    </div>
+  )
+}
+ 
+Si al ejecutar: http://localhost:3000/auth/register
+obtenemos un error: Runtime ReferenceError Server
+
+Como estamos usando un hook de react (que se ejecuta del lado del cliente),
+resolvemos el error anterior, agregando a src/app/auth/register/page.jsx: 
+"use client"
+
+Estilos:
+En global.css, le damos estilo al body: 
+  body{
+    @apply bg-neutral-950;
+  }
+
+Y le doy estilo a todos los elementos de src/app/auth/register/page.tsx:
+"use client"
+import { useForm, SubmitHandler } from 'react-hook-form'
+
+type RegisterFormInputs = {
+  username: string
+  email: string
+  password: string
+  confirmPassword: string
+}
+
+export default function RegisterPage() {
+
+  const { register, handleSubmit } = useForm<RegisterFormInputs>()
+
+  const onSubmit: SubmitHandler<RegisterFormInputs> = data => {
+    console.log(data)
+  }
+
+  return (
+    <div className="h-[calc(100vh-7rem)] flex justify-center items-center ">
+      <form onSubmit={handleSubmit(onSubmit)} className="bg-slate-800 p-10 rounded w-1/4  ">
+        <div className="text-slate-200 font-bold text-3xl mb-4">Registrar Usuario</div>
+
+        <label htmlFor="username" className="text-slate-500 mb-2 block-text-sm">Nombre de usuario:</label>
+        <input type="text" 
+               {...register('username', { required: true })} 
+               className="p-3 rounded block mb-2 bg-slate-900 text-slate-300 w-full"
+               />
+        <label htmlFor="email" className="text-slate-500 mb-2 block-text-sm">Email:</label>               
+        <input type="email" 
+               {...register('email', { required: true })} 
+               className="p-3 rounded block mb-2 bg-slate-900 text-slate-300 w-full"
+               />
+        <label htmlFor="password" className="text-slate-500 mb-2 block-text-sm">Password:</label>       
+        <input type="password" 
+               {...register('password', { required: true })} 
+               className="p-3 rounded block mb-2 bg-slate-900 text-slate-300 w-full"
+               />
+        <label htmlFor="confirmPassword" className="text-slate-500 mb-2 block-text-sm">Confirmar Password:</label>       
+        <input type="password" 
+               {...register('confirmPassword', { required: true })}  
+               className="p-3 rounded block mb-2 bg-slate-900 text-slate-300 w-full"
+               />               
+        <button 
+          type="submit"
+          className="w-full bg-blue-500 hover:bg-blue-700 text-white font-bold p-3 rounded-lg mt-2">
+             Registrar
+        </button>
+      </form>
+    </div>
+  )
+}
+
+-----------
+
+Changes not staged for commit:
+  (use "git add/rm <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+        modified:   package.json
+        deleted:    src/app/auth/register/page.jsx
+        modified:   src/app/globals.css
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+        .gitignore
+        AGENTS.md
+        CLAUDE.md
+        dev.db
+        package-lock.json
+        src/app/auth/register/page.tsx
+
+git add package.json src/app/auth/register/page.jsx src/app/globals.css src/app/auth/register/page.tsx
+git commit -m "registración de usuario"
+git push
