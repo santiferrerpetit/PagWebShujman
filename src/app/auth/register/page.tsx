@@ -1,4 +1,5 @@
 "use client"
+import { useRouter } from 'next/navigation'
 import { useForm, SubmitHandler } from 'react-hook-form'
 
 type RegisterFormInputs = {
@@ -12,20 +13,28 @@ export default function RegisterPage() {
 
   const { register, handleSubmit, formState: { errors } } = useForm<RegisterFormInputs>()
 
-  const onSubmit = handleSubmit(async data => {
-    console.log(data)
-    console.log(JSON.stringify(data))
+  const router = useRouter()
+
+  const onSubmit = handleSubmit(async formValues => {
+    console.log(formValues)
+    const payload = {
+      ...formValues,
+      password: formValues.password
+    }
+    console.log(JSON.stringify(payload))
     const respuesta = await fetch('/api/auth/register', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify(data) 
+      body: JSON.stringify(payload)
     })
 
-    const resultado = await respuesta.json()
-    
-    console.log(resultado)
+    if(respuesta.ok) {
+    router.push('/auth/login')
+    }
+
+    console.log(respuesta)
   })
 
   return (

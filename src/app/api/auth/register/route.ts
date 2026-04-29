@@ -14,7 +14,6 @@ export async function POST(request: NextRequest) {
     try {
         const data = await request.json() as RegisterData;
 
-        console.log('funcion POST data:', data)
 
         if (data.password !== data.confirmPassword) {
             return NextResponse.json({ message: 'Las contraseñas no coinciden' }, { status: 400 })
@@ -41,6 +40,7 @@ export async function POST(request: NextRequest) {
         }
 
         const hashedPassword = await bcrypt.hash(data.password, 10)
+        console.log('hashedPassword:', hashedPassword)
         
         const newUser = await prisma.user.create({
             data: {
@@ -51,8 +51,7 @@ export async function POST(request: NextRequest) {
         })
 
         // quitamos el password de la respuesta para no enviarlo al cliente
-        const {password, ...user} = newUser
-        void password
+        const {password: _, ...user} = newUser
 
         return NextResponse.json(user)
     } catch (error) {

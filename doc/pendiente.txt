@@ -228,7 +228,7 @@ export default function LoginPage() {
     </div>
   )
 }
-
+(HASTA ACA YA ESTA HECHO)
 ----------
 Vamos a proteger la ruta del dasboard:
 http://localhost:3000/dashboard
@@ -280,7 +280,7 @@ export default function DashBoardPage() {
     </div>
   )
 }
-
+(HASTA ACA YA ESTA HECHO)
 -----------
 Agregamos navegación básica:
 Creamos la carpeta src/app/components/
