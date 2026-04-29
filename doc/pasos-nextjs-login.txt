@@ -121,24 +121,25 @@ npm install @prisma/client@latest
 npm install @prisma/adapter-better-sqlite3
 npm install @types/better-sqlite3 -D
 
-En lib/prisma.ts:
+En src/lib/prisma.ts:
 
-import 'dotenv/config';
-import { PrismaBetterSqlite3 } from '@prisma/adapter-better-sqlite3';
-import { PrismaClient } from '@prisma/client/extension';
+import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3"
+import { PrismaClient } from "@/generated/prisma/client"
 
-const url = process.env.DATABASE_URL ?? 'file:./dev.db';
-const adapter = new PrismaBetterSqlite3({ url });
+const url = process.env.DATABASE_URL ?? "file:./dev.db"
+const adapter = new PrismaBetterSqlite3({url})
 
 declare global {
-  var prisma: PrismaClient | undefined;
+    // allow global `var` declarations
+    // eslint-disable-next-line no-var, vars-on-top
+    var prisma: PrismaClient | undefined
 }
 
-export const prisma = globalThis.prisma ?? new PrismaClient({ adapter });
+const prisma = globalThis.prisma ?? new PrismaClient({ adapter })
 
-if (process.env.NODE_ENV !== 'production') {
-  globalThis.prisma = prisma;
-}
+export default prisma
+
+if (process.env.NODE_ENV !== 'production') globalThis.prisma = prisma
 
 -------------
 Pruebo que funciona un endpoint GET en mi aplicación:
@@ -338,6 +339,186 @@ Untracked files:
         package-lock.json
         src/app/auth/register/page.tsx
 
-git add package.json src/app/auth/register/page.jsx src/app/globals.css src/app/auth/register/page.tsx
+git add package.json src/app/auth/register/page.jsx src/app/globals.css src/app/auth/register/page.tsx doc
 git commit -m "registración de usuario"
 git push
+
+-------------------
+
+Manejar errores del formulario:
+ Uso de formState:{errors} del useForm:
+ const { register, handleSubmit, formState: { errors } } = useForm<RegisterFormInputs>()
+ Muestro los errores de la siguiente manera: 
+   {errors.username && (<span className="text-read-500">{errors.username} </span>)}
+Resultando:
+
+"use client"
+import { useForm, SubmitHandler } from 'react-hook-form'
+
+type RegisterFormInputs = {
+  username: string
+  email: string
+  password: string
+  confirmPassword: string
+}
+
+export default function RegisterPage() {
+
+  const { register, handleSubmit, formState: { errors } } = useForm<RegisterFormInputs>()
+
+  const onSubmit: SubmitHandler<RegisterFormInputs> = data => {
+    console.log(data)
+  }
+
+  return (
+    <div className="h-[calc(100vh-7rem)] flex justify-center items-center ">
+      <form onSubmit={handleSubmit(onSubmit)} className="bg-slate-800 p-10 rounded w-1/4  ">
+        <div className="text-slate-200 font-bold text-3xl mb-4">Registrar Usuario</div>
+
+        <div>
+          <label htmlFor="username" className="text-slate-500 mb-2 block-text-sm">Nombre de usuario:</label>
+          <input type="text"
+            {...register('username', { required: { value: true, message: 'El nombre de usuario es requerido' } })}
+            className="p-3 rounded block mb-2 bg-slate-900 text-slate-300 w-full"
+          />
+          {errors.username && (<span className="text-red-500 text-xs">{errors.username.message} </span>)}
+        </div>
+
+        <div>
+          <label htmlFor="email" className="text-slate-500 mb-2 block-text-sm">Email:</label>
+          <input type="email"
+            {...register('email', { required: { value: true, message: 'El email es requerido' } })}
+            className="p-3 rounded block mb-2 bg-slate-900 text-slate-300 w-full"
+          />
+          {errors.email && (<span className="text-red-500 text-xs">{errors.email.message} </span>)}
+        </div>
+
+        <div>
+          <label htmlFor="password" className="text-slate-500 mb-2 block-text-sm">Password:</label>
+          <input type="password"
+            {...register('password', { required: { value: true, message: 'La contraseña es requerida' } })}
+            className="p-3 rounded block mb-2 bg-slate-900 text-slate-300 w-full"
+          />
+          {errors.password && (<span className="text-red-500 text-xs">{errors.password.message} </span>)}
+        </div>
+
+        <div>
+          <label htmlFor="confirmPassword" className="text-slate-500 mb-2 block-text-sm">Confirmar Password:</label>
+          <input type="password"
+            {...register('confirmPassword', { required: { value: true, message: 'Es necesario confirmar la contraseña' } })}
+            className="p-3 rounded block mb-2 bg-slate-900 text-slate-300 w-full"
+          />
+          {errors.confirmPassword && (<span className="text-red-500 text-xs">{errors.confirmPassword.message} </span>)}
+        </div>
+
+        <button
+          type="submit"
+          className="w-full bg-blue-500 hover:bg-blue-700 text-white font-bold p-3 rounded-lg mt-2">
+          Registrar
+        </button>
+      </form>
+    </div>
+  )
+}
+
+------------
+Invocar al endpoint para registrar un nuevo usuario:
+Creamos la carpeta: src/app/api/auth/register 
+Creamos el archivo src/app/api/auth/register/route.js:
+
+import { NextRequest, NextResponse } from "next/server"
+import { prisma } from "@/lib/prisma"
+
+type RegisterData = {
+    username: string;
+    email: string;
+    password: string;
+    confirmPassword: string;
+}
+
+export async function POST(request: NextRequest) {
+    try {
+        const data = await request.json() as RegisterData;
+
+        console.log('funcion POST data:', data)
+
+        if (data.password !== data.confirmPassword) {
+            return NextResponse.json({ message: 'Las contraseñas no coinciden' }, { status: 400 })
+        }
+
+        const emailFound = await prisma.user.findUnique({
+            where: {
+                email: data.email
+            }
+        })
+
+        if (emailFound) {
+            return NextResponse.json({ message: 'El email ya está registrado' }, { status: 400 })
+        }
+
+        const usernameFound = await prisma.user.findUnique({
+            where: {
+                username: data.username
+            }
+        })
+
+        if (usernameFound) {
+            return NextResponse.json({ message: 'El nombre de usuario ya está registrado' }, { status: 400 })
+        }
+
+        const newUser = await prisma.user.create({
+            data: {
+                username: data.username,
+                email: data.email,
+                password: data.password
+            }
+        })
+
+        return NextResponse.json(newUser)
+    } catch (error) {
+        console.error('[register] error:', error)
+        return NextResponse.json({ message: 'Error interno del servidor' }, { status: 500 })
+    }
+}
+
+Llamamos al endpoint /api/auth/register, haciendo POST.
+Procesamos la respuesta con await fetch:
+Desde src/app/auth/register/page.jsx:
+
+const onSubmit = handleSubmit(async data => {
+    console.log(data)
+    const respuesta = await fetch('/api/auth/register', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(data) 
+    })
+
+    const resultado = await respuesta.json()
+    
+    console.log(resultado)
+  })
+
+--------
+Para encriptar el password que envío:
+npm i bcrypt
+npm install -D @types/bcrypt
+
+En react-nextjs-login\src\app\api\auth\register\route.ts:
+ const hashedPassword = await bcrypt.hash(data.password, 10)
+ 
+ const newUser = await prisma.user.create({
+    data: {
+       username: data.username,
+       email: data.email,
+       password: hashedPassword
+   }
+})
+
+Cuando devuelvo el json del usuario creado, le quito el password:
+// quitamos el password de la respuesta para no enviarlo al cliente
+const {password, ...user} = newUser
+void password
+
+return NextResponse.json(user)
