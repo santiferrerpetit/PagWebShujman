@@ -505,7 +505,9 @@ Para encriptar el password que envío:
 npm i bcrypt
 npm install -D @types/bcrypt
 
-En react-nextjs-login\src\app\api\auth\register\route.ts:
+En src/app/api/auth/register/route.ts:
+ import bcrypt from "bcrypt"
+ 
  const hashedPassword = await bcrypt.hash(data.password, 10)
  
  const newUser = await prisma.user.create({
