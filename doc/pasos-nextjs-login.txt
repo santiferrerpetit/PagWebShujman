@@ -521,4 +521,8 @@ Cuando devuelvo el json del usuario creado, le quito el password:
 const {password, ...user} = newUser
 void password
 
-return NextResponse.json(user)
+-------------
+
+git add doc/pasos-nextjs-login.txt lib/prisma.ts package.json src/app/auth/register/page.tsx src/app/globals.css src/app/api/auth src/lib
+
+no changes added to commit (use "git add" and/or "git commit -a")
