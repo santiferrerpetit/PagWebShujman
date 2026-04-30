@@ -1,6 +1,6 @@
 "use client"
 import { useState } from "react"
-import { useForm } from "react-hook-form"
+import { set, useForm } from "react-hook-form"
 import { signIn } from 'next-auth/react'
 import { useRouter } from 'next/navigation';
 
@@ -13,6 +13,7 @@ export default function LoginPage() {
 
   const onSubmit = handleSubmit(async data => {
     console.log(data)
+    setError(null)
     const res = await signIn('credentials', {
       email: data.email,
       password: data.password,
@@ -24,6 +25,7 @@ export default function LoginPage() {
     } else {
       console.log('Inicio de sesión exitoso', res)
       router.push('/dashboard')
+      router.refresh()
     }
   })
 

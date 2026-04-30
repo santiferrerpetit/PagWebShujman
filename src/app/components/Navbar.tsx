@@ -4,7 +4,9 @@ import { getServerSession } from "next-auth/next";
 
 export default async function Navbar() {
 
-    const session = await getServerSession(authOptions)
+  const session = await getServerSession(authOptions)
+  console.log('authOptions desde navbar:', authOptions)
+  console.log('session desde navbar:', session)
 
   return (
     <nav className="flex justify-between items-center bg-gray-900 text-white px-24">
