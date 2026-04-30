@@ -852,3 +852,21 @@ export default async function Navbar() {
 ----------
 react-nextjs-login\src\app\auth\login\page.tsx
 Cambio de page.jsx a page.tsx
+
+
+Quitar el seguimiento de package-lock.json en Git sin borrarlo:
+Ejecuta 
+git rm --cached package-lock.json
+Añadir el archivo a .gitignore.
+git commit -m "Dejar de rastrear package-lock.json"
+git push
+
+----------
+Evitar el warning:
+ The "middleware" file convention is deprecated. Please use "proxy" instead. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+que da al ejecutar:
+npm run build
+
+
+Ejecutar:
+npx @next/codemod@canary middleware-to-proxy .
