@@ -1,6 +1,6 @@
 "use client"
 import { useRouter } from 'next/navigation'
-import { useForm, SubmitHandler } from 'react-hook-form'
+import { useForm } from 'react-hook-form'
 
 type RegisterFormInputs = {
   username: string
@@ -31,7 +31,7 @@ export default function RegisterPage() {
     })
 
     if(respuesta.ok) {
-    router.push('/auth/login')
+      router.push('/auth/login')
     }
 
     console.log(respuesta)
