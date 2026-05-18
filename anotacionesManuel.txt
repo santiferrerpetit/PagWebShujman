@@ -1,6 +1,0 @@
-Cree un .env porque estaba fallando la encriptacion. 
-No se si shujman dijo que no hagamos esto o se lo saltaron.
-Lo pongo por las dudas asi no da mas error, es la clave que shujman dij que pone 5000 puteadads.
-
-En el page.tsx del register, cambio el "Data" que estaba antes por un payload hecho, porque si no la pagina cuando te registras te muestra la contraseña que le mandaste y no esta bueno.
-Hago que te muestre la encriptacion de la contraseña y listo.

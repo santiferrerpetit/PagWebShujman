@@ -1,36 +1,58 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Aplicaciones Especificas de Redes
 
-## Getting Started
+Proyecto de gestión integral de clubes con autenticación de usuarios.
 
-First, run the development server:
+## Stack
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+- **Frontend:** React + Vite + Tailwind CSS
+- **Backend:** Express + Prisma + SQLite
+- **Auth:** JWT
+
+## Estructura
+
+```
+├── backend/     # API REST con Express
+│   ├── prisma/  # Esquema y migraciones
+│   └── src/     # Rutas y middleware
+└── frontend/    # SPA con React
+    └── src/     # Páginas y componentes
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Scripts
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+# Instalar dependencias de todo el proyecto
+npm run install:all
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+# Desarrollo
+npm run dev:backend   # Puerto 3001
+npm run dev:frontend  # Puerto 5173
 
-## Learn More
+# Build
+npm run build:backend
+npm run build:frontend
+```
 
-To learn more about Next.js, take a look at the following resources:
+## Variables de entorno
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Copiar `backend/.env.example` a `backend/.env` y ajustar los valores:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```bash
+cp backend/.env.example backend/.env
+```
 
-## Deploy on Vercel
+Contenido de `backend/.env`:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```env
+PORT=3001
+DATABASE_URL="file:./dev.db"
+JWT_SECRET="tu-clave-secreta-aqui"
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+> ⚠️ **Importante:** Nunca commitear el archivo `.env`. Asegurate de que `JWT_SECRET` sea una clave segura y única.
+
+## Características
+
+- Registro e inicio de sesión de usuarios
+- Protección de rutas con JWT
+- Diseño moderno con Tailwind CSS

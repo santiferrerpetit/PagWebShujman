@@ -51,6 +51,22 @@ dev.db
 
 package-lock.json
 
+# agent / internal docs
+.opencode/
+.opencoe/
+doc/
+docs/
+
 # generated (optional, uncomment if you want to generate on server)
 /src/generated/
+
+# Backend
+backend/node_modules
+backend/dist
+backend/.env
+
+# Frontend
+frontend/node_modules
+frontend/dist
+frontend/.env
 
