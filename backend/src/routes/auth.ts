@@ -11,6 +11,8 @@ router.post("/register", async (req, res) => {
     const data = req.body as {
       username: string;
       email: string;
+      firstName: string;
+      lastName: string;
       password: string;
       confirmPassword: string;
     };
@@ -36,20 +38,38 @@ router.post("/register", async (req, res) => {
       return;
     }
 
+    const defaultRole = await prisma.role.findUnique({
+      where: { name: "Professor" },
+    });
+    if (!defaultRole) {
+      res.status(500).json({ message: "Error de configuración del servidor" });
+      return;
+    }
+
     const hashedPassword = await bcrypt.hash(data.password, 10);
 
     const newUser = await prisma.user.create({
       data: {
         username: data.username,
         email: data.email,
+        firstName: data.firstName,
+        lastName: data.lastName,
         password: hashedPassword,
+        roleId: defaultRole.id,
+      },
+      select: {
+        id: true,
+        username: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+        roleId: true,
+        role: { select: { id: true, name: true } },
+        createdAt: true,
       },
     });
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { password: _, ...user } = newUser;
-
-    res.status(201).json(user);
+    res.status(201).json(newUser);
   } catch (error) {
     console.error("[register] error:", error);
     res.status(500).json({ message: "Error interno del servidor" });
@@ -58,15 +78,16 @@ router.post("/register", async (req, res) => {
 
 router.post("/login", async (req, res) => {
   try {
-    const { email, password } = req.body as { email: string; password: string };
+    const { username, password } = req.body as { username: string; password: string };
 
-    if (!email || !password) {
-      res.status(400).json({ message: "Email y contraseña requeridos" });
+    if (!username || !password) {
+      res.status(400).json({ message: "Usuario y contraseña requeridos" });
       return;
     }
 
     const user = await prisma.user.findUnique({
-      where: { email },
+      where: { username },
+      include: { role: { select: { id: true, name: true } } },
     });
 
     if (!user) {
@@ -81,12 +102,19 @@ router.post("/login", async (req, res) => {
     }
 
     const token = jwt.sign(
-      { id: String(user.id), name: user.username, email: user.email },
+      {
+        id: String(user.id),
+        username: user.username,
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        roleId: user.role.id,
+        roleName: user.role.name,
+      },
       process.env.JWT_SECRET!,
       { expiresIn: "7d" }
     );
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { password: _, ...userWithoutPassword } = user;
 
     res.json({ token, user: userWithoutPassword });
@@ -96,12 +124,34 @@ router.post("/login", async (req, res) => {
   }
 });
 
-router.get("/me", authenticateToken, (req: AuthenticatedRequest, res) => {
-  res.json({ user: req.user });
+router.get("/me", authenticateToken, async (req: AuthenticatedRequest, res) => {
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: Number(req.user!.id) },
+      select: {
+        id: true,
+        username: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+        roleId: true,
+        role: { select: { id: true, name: true } },
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
+    if (!user) {
+      res.status(404).json({ message: "Usuario no encontrado" });
+      return;
+    }
+    res.json({ user });
+  } catch (error) {
+    console.error("[me] error:", error);
+    res.status(500).json({ message: "Error interno del servidor" });
+  }
 });
 
 router.post("/logout", (_req, res) => {
-  // JWT es stateless; el logout se hace en el cliente borrando el token.
   res.json({ message: "Logout exitoso" });
 });
 

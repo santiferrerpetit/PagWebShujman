@@ -2,7 +2,7 @@ import { useAuth } from "@/context/AuthContext";
 import { useNavigate } from "react-router-dom";
 
 export default function DashboardPage() {
-  const { logout } = useAuth();
+  const { user, logout } = useAuth();
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -14,7 +14,12 @@ export default function DashboardPage() {
     <div>
       <section className="h-[calc(100vh-7rem)] flex justify-center items-center">
         <div className="flex flex-col items-center">
-          <h1 className="text-white text-5xl">Bienvenido!</h1>
+          <h1 className="text-white text-5xl">
+            Bienvenido{user ? `, ${user.firstName} ${user.lastName}` : ""}!
+          </h1>
+          <p className="text-slate-400 mt-2">
+            Rol: {user?.role?.name ?? "Sin rol"}
+          </p>
           <button
             className="bg-white text-black px-4 py-2 rounded-md mt-4"
             onClick={handleLogout}

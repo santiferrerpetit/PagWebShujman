@@ -8,10 +8,14 @@ import {
 } from "react";
 import { apiFetch } from "@/lib/api";
 
-interface User {
+export interface User {
   id: string;
-  name: string;
+  username: string;
   email: string;
+  firstName: string;
+  lastName: string;
+  roleId: number;
+  role: { id: number; name: string };
 }
 
 interface AuthContextType {
@@ -59,9 +63,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = useCallback(() => {
     localStorage.removeItem("token");
     setUser(null);
-    apiFetch("/api/auth/logout", { method: "POST" }).catch(() => {
-      // silently ignore network errors on logout
-    });
+    apiFetch("/api/auth/logout", { method: "POST" }).catch(() => {});
   }, []);
 
   return (

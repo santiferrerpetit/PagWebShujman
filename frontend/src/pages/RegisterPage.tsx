@@ -5,6 +5,8 @@ import { Link, useNavigate } from "react-router-dom"
 import { API_BASE } from "@/lib/api"
 
 type RegisterFormInputs = {
+  firstName: string
+  lastName: string
   username: string
   email: string
   password: string
@@ -12,7 +14,7 @@ type RegisterFormInputs = {
 }
 
 export default function RegisterPage() {
-  const { register, handleSubmit, formState: { errors }, watch } = useForm<RegisterFormInputs>()
+  const { register, handleSubmit, formState: { errors } } = useForm<RegisterFormInputs>()
   const navigate = useNavigate()
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -28,6 +30,8 @@ export default function RegisterPage() {
     
     try {
       const payload = {
+        firstName: formValues.firstName,
+        lastName: formValues.lastName,
         username: formValues.username,
         email: formValues.email,
         password: formValues.password,
@@ -58,9 +62,7 @@ export default function RegisterPage() {
   return (
     <div className="flex-1 flex items-center justify-center bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 px-4 py-12">
       <div className="w-full max-w-md">
-        {/* Card principal */}
         <div className="bg-slate-800/80 backdrop-blur-xl rounded-3xl shadow-2xl shadow-black/30 border border-slate-700/50 p-8 md:p-10">
-          {/* Header */}
           <div className="text-center mb-8">
             <div className="w-16 h-16 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-emerald-500/25">
               <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -71,8 +73,51 @@ export default function RegisterPage() {
             <p className="text-slate-400">Completa tus datos para registrarte</p>
           </div>
 
-          {/* Formulario */}
           <form onSubmit={onSubmit} className="space-y-5">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label htmlFor="firstName" className="block text-sm font-medium text-slate-300 mb-2">
+                  Nombre
+                </label>
+                <input
+                  type="text"
+                  id="firstName"
+                  {...register('firstName', { required: { value: true, message: 'El nombre es requerido' } })}
+                  className="w-full px-4 py-3 bg-slate-900/80 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-all"
+                  placeholder="Juan"
+                />
+                {errors.firstName && (
+                  <span className="text-red-400 text-xs mt-1 flex items-center gap-1">
+                    <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                    </svg>
+                    {errors.firstName.message}
+                  </span>
+                )}
+              </div>
+
+              <div>
+                <label htmlFor="lastName" className="block text-sm font-medium text-slate-300 mb-2">
+                  Apellido
+                </label>
+                <input
+                  type="text"
+                  id="lastName"
+                  {...register('lastName', { required: { value: true, message: 'El apellido es requerido' } })}
+                  className="w-full px-4 py-3 bg-slate-900/80 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-all"
+                  placeholder="Pérez"
+                />
+                {errors.lastName && (
+                  <span className="text-red-400 text-xs mt-1 flex items-center gap-1">
+                    <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                    </svg>
+                    {errors.lastName.message}
+                  </span>
+                )}
+              </div>
+            </div>
+
             <div>
               <label htmlFor="username" className="block text-sm font-medium text-slate-300 mb-2">
                 Nombre de usuario
@@ -218,7 +263,6 @@ export default function RegisterPage() {
             )}
           </form>
 
-          {/* Footer */}
           <div className="mt-8 text-center">
             <p className="text-slate-400 text-sm">
               ¿Ya tienes una cuenta?{' '}

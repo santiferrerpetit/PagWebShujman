@@ -2,7 +2,15 @@ import type { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 
 export interface AuthenticatedRequest extends Request {
-  user?: { id: string; name: string; email: string };
+  user?: {
+    id: string;
+    username: string;
+    email: string;
+    firstName: string;
+    lastName: string;
+    roleId: number;
+    roleName: string;
+  };
 }
 
 export function authenticateToken(
@@ -23,7 +31,27 @@ export function authenticateToken(
       res.status(403).json({ message: "Token inválido o expirado" });
       return;
     }
-    req.user = decoded as { id: string; name: string; email: string };
+
+    const payload = decoded as {
+      id: string;
+      username: string;
+      email: string;
+      firstName: string;
+      lastName: string;
+      roleId: number;
+      roleName: string;
+    };
+
+    req.user = {
+      id: payload.id,
+      username: payload.username,
+      email: payload.email,
+      firstName: payload.firstName,
+      lastName: payload.lastName,
+      roleId: payload.roleId,
+      roleName: payload.roleName,
+    };
+
     next();
   });
 }

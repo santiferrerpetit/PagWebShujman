@@ -6,7 +6,7 @@ import { useAuth } from "@/context/AuthContext"
 import { API_BASE } from "@/lib/api"
 
 type LoginFormInputs = {
-  email: string;
+  username: string;
   password: string;
 }
 
@@ -26,7 +26,7 @@ export default function LoginPage() {
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ email: data.email, password: data.password })
+        body: JSON.stringify({ username: data.username, password: data.password })
       })
 
       const result = await res.json().catch(() => ({}))
@@ -53,9 +53,7 @@ export default function LoginPage() {
   return (
     <div className="flex-1 flex items-center justify-center bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 px-4 py-12">
       <div className="w-full max-w-md">
-        {/* Card principal */}
         <div className="bg-slate-800/80 backdrop-blur-xl rounded-3xl shadow-2xl shadow-black/30 border border-slate-700/50 p-8 md:p-10">
-          {/* Header */}
           <div className="text-center mb-8">
             <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-blue-500/25">
               <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -66,32 +64,31 @@ export default function LoginPage() {
             <p className="text-slate-400">Ingresa a tu cuenta para continuar</p>
           </div>
 
-          {/* Formulario */}
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-slate-300 mb-2">
-                Correo electrónico
+              <label htmlFor="username" className="block text-sm font-medium text-slate-300 mb-2">
+                Nombre de usuario
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                   <svg className="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                   </svg>
                 </div>
                 <input
-                  type="email"
-                  id="email"
-                  {...register('email', { required: { value: true, message: 'El email es requerido' } })}
+                  type="text"
+                  id="username"
+                  {...register('username', { required: { value: true, message: 'El usuario es requerido' } })}
                   className="w-full pl-10 pr-4 py-3 bg-slate-900/80 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all"
-                  placeholder="tu@email.com"
+                  placeholder="usuario"
                 />
               </div>
-              {errors.email && (
+              {errors.username && (
                 <span className="text-red-400 text-xs mt-1 flex items-center gap-1">
                   <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
                   </svg>
-                  {errors.email.message}
+                  {errors.username.message}
                 </span>
               )}
             </div>
@@ -157,7 +154,6 @@ export default function LoginPage() {
             )}
           </form>
 
-          {/* Footer */}
           <div className="mt-8 text-center">
             <p className="text-slate-400 text-sm">
               ¿No tienes una cuenta?{' '}
