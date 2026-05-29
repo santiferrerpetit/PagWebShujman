@@ -51,6 +51,7 @@ model Member {
 
   memberGroups MemberGroup[]
   attendances  Attendance[]
+  memberFees   MemberFee[]
 }
 
 model Discipline {
@@ -131,4 +132,28 @@ model MaintenanceLog {
   taskDescription String
   suppliesNeeded String?
   status         String
+}
+
+model SportsFee {
+  id          Int      @id @default(autoincrement())
+  name        String
+  amount      Decimal
+  description String?
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+
+  memberFees MemberFee[]
+}
+
+model MemberFee {
+  id          Int       @id @default(autoincrement())
+  memberId    Int
+  member      Member    @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  feeId       Int
+  fee         SportsFee @relation(fields: [feeId], references: [id], onDelete: Cascade)
+  paid        Boolean   @default(false)
+  paidAt      DateTime?
+  createdAt   DateTime  @default(now())
+
+  @@unique([memberId, feeId])
 }

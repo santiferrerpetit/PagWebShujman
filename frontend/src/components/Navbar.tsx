@@ -84,6 +84,30 @@ export default function Navbar() {
                     Panel
                   </Link>
                 </li>
+                <li>
+                  <Link
+                    to="/members"
+                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                      isActive("/members")
+                        ? "text-white bg-slate-800"
+                        : "text-slate-400 hover:text-white hover:bg-slate-800/50"
+                    }`}
+                  >
+                    Socios
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/fees"
+                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                      isActive("/fees")
+                        ? "text-white bg-slate-800"
+                        : "text-slate-400 hover:text-white hover:bg-slate-800/50"
+                    }`}
+                  >
+                    Aranceles
+                  </Link>
+                </li>
                 <li className="ml-2">
                   <button
                     onClick={handleLogout}

@@ -6,10 +6,10 @@ import {
   useCallback,
   type ReactNode,
 } from "react";
-import { apiFetch } from "@/lib/api";
+import { meApi, logoutApi } from "@/features/auth/api/authApi";
 
 export interface User {
-  id: string;
+  id: number;
   username: string;
   email: string;
   firstName: string;
@@ -38,11 +38,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return;
     }
 
-    apiFetch("/api/auth/me")
-      .then(async (res) => {
-        if (res.ok) {
-          const data = (await res.json()) as { user: User };
-          setUser(data.user);
+    meApi()
+      .then((data) => {
+        if (data.user) {
+          setUser(data.user as User);
         } else {
           localStorage.removeItem("token");
         }
@@ -55,6 +54,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
   }, []);
 
+  useEffect(() => {
+    const handleLogout = () => {
+      localStorage.removeItem("token");
+      setUser(null);
+    };
+    window.addEventListener("auth:logout", handleLogout);
+    return () => window.removeEventListener("auth:logout", handleLogout);
+  }, []);
+
   const login = useCallback((token: string, userData: User) => {
     localStorage.setItem("token", token);
     setUser(userData);
@@ -63,7 +71,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = useCallback(() => {
     localStorage.removeItem("token");
     setUser(null);
-    apiFetch("/api/auth/logout", { method: "POST" }).catch(() => {});
+    logoutApi().catch(() => {});
   }, []);
 
   return (
