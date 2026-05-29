@@ -61,12 +61,12 @@ export async function loginUser(data: LoginInput) {
   });
 
   if (!user) {
-    throw new AppError("Credenciales inválidas", "INVALID_CREDENTIALS", 401);
+    throw new AppError("El usuario no existe", "USER_NOT_FOUND", 401);
   }
 
   const matchPassword = await bcrypt.compare(data.password, user.password);
   if (!matchPassword) {
-    throw new AppError("Credenciales inválidas", "INVALID_CREDENTIALS", 401);
+    throw new AppError("Contraseña incorrecta", "WRONG_PASSWORD", 401);
   }
 
   const token = jwt.sign(

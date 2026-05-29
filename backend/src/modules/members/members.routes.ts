@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { authenticateToken } from "../../middleware/auth";
+import { requireAdmin } from "../../middleware/admin";
 import { validate } from "../../middleware/validate";
 import {
   listMembers,
@@ -12,10 +13,10 @@ import { createMemberSchema, updateMemberSchema, memberIdSchema } from "./member
 
 const router = Router();
 
-router.get("/", authenticateToken, listMembers);
-router.get("/:id", authenticateToken, validate(memberIdSchema, "params"), getMember);
-router.post("/", authenticateToken, validate(createMemberSchema), create);
-router.put("/:id", authenticateToken, validate(memberIdSchema, "params"), validate(updateMemberSchema), update);
-router.delete("/:id", authenticateToken, validate(memberIdSchema, "params"), remove);
+router.get("/", authenticateToken, requireAdmin, listMembers);
+router.get("/:id", authenticateToken, requireAdmin, validate(memberIdSchema, "params"), getMember);
+router.post("/", authenticateToken, requireAdmin, validate(createMemberSchema), create);
+router.put("/:id", authenticateToken, requireAdmin, validate(memberIdSchema, "params"), validate(updateMemberSchema), update);
+router.delete("/:id", authenticateToken, requireAdmin, validate(memberIdSchema, "params"), remove);
 
 export default router;

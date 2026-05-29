@@ -27,17 +27,17 @@ const router = Router();
 // Rutas específicas ANTES de rutas genéricas con :id
 
 // Consultas generales
-router.get("/", authenticateToken, listFees);
-router.get("/all-assignments", authenticateToken, listAllMemberFees);
+router.get("/", authenticateToken, requireAdmin, listFees);
+router.get("/all-assignments", authenticateToken, requireAdmin, listAllMemberFees);
 
 // Asignación de aranceles a socios
 router.post("/assign", authenticateToken, requireAdmin, validate(assignFeeSchema), assignFee);
-router.post("/toggle-paid", authenticateToken, validate(toggleFeePaidSchema), togglePaid);
-router.get("/member/:memberId", authenticateToken, listMemberFees);
+router.post("/toggle-paid", authenticateToken, requireAdmin, validate(toggleFeePaidSchema), togglePaid);
+router.get("/member/:memberId", authenticateToken, requireAdmin, listMemberFees);
 router.delete("/member/:memberId/fee/:feeId", authenticateToken, requireAdmin, unassignFee);
 
 // CRUD de aranceles (rutas genéricas :id van AL FINAL)
-router.get("/:id", authenticateToken, validate(feeIdSchema, "params"), getFee);
+router.get("/:id", authenticateToken, requireAdmin, validate(feeIdSchema, "params"), getFee);
 router.post("/", authenticateToken, requireAdmin, validate(createFeeSchema), create);
 router.put("/:id", authenticateToken, requireAdmin, validate(feeIdSchema, "params"), validate(updateFeeSchema), update);
 router.delete("/:id", authenticateToken, requireAdmin, validate(feeIdSchema, "params"), remove);

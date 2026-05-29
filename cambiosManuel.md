@@ -314,5 +314,4 @@ Se implementó la gestión de aranceles deportivos:
 
 ---
 
-**Autor:** OpenCode Agent  
-**Commit sugerido:** `git add . && git commit -m "refactor: arquitectura modular por dominio + módulo Members de ejemplo"`
+

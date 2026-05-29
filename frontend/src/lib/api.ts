@@ -26,16 +26,16 @@ export async function apiFetch<T = any>(path: string, options: ApiOptions = {}):
     headers,
   });
 
+  const data = await response.json().catch(() => ({}));
+
   if (response.status === 401) {
     localStorage.removeItem("token");
     window.dispatchEvent(new Event("auth:logout"));
-    throw Object.assign(new Error("Sesión expirada. Por favor inicia sesión nuevamente."), {
+    throw Object.assign(new Error(data.message || "Sesión expirada. Por favor inicia sesión nuevamente."), {
       statusCode: 401,
-      code: "UNAUTHORIZED",
+      code: data.code || "UNAUTHORIZED",
     } as ApiError);
   }
-
-  const data = await response.json().catch(() => ({}));
 
   if (!response.ok) {
     throw Object.assign(new Error(data.message || "Error en la petición"), {
