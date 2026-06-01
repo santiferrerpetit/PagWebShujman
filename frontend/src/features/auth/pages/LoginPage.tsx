@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Página de inicio de sesión con formulario validado por react-hook-form.
+ * Redirige al dashboard tras autenticación exitosa.
+ */
+
 import { useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
@@ -12,6 +17,14 @@ type LoginFormInputs = {
   password: string;
 };
 
+/**
+ * Página de inicio de sesión.
+ * Usa react-hook-form para validación y useLogin para gestionar la petición.
+ * Al autenticarse correctamente, guarda el token y redirige a /dashboard.
+ *
+ * @component
+ * @returns {JSX.Element} Formulario de login
+ */
 export default function LoginPage() {
   const { login: doAuthLogin } = useAuth();
   const navigate = useNavigate();
@@ -27,7 +40,7 @@ export default function LoginPage() {
   });
 
   return (
-    <div className="flex-1 flex items-center justify-center bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 px-4 py-12">
+    <div className="flex-1 flex items-center justify-center bg-neutral-950 px-4 py-12">
       <div className="w-full max-w-md">
         <Card
           title="Bienvenido"

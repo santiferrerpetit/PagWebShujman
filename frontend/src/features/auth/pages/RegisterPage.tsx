@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Página de registro de nuevo usuario con formulario validado.
+ * Valida coincidencia de contraseñas y redirige al login tras registro exitoso.
+ */
+
 import { useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router-dom";
 import { useRegister } from "@/features/auth/hooks/useAuthActions";
@@ -15,6 +20,14 @@ type RegisterFormInputs = {
   confirmPassword: string;
 };
 
+/**
+ * Página de registro de nuevos usuarios.
+ * Valida que las contraseñas coincidan antes de enviar.
+ * Redirige a /auth/login tras un registro exitoso.
+ *
+ * @component
+ * @returns {JSX.Element} Formulario de registro
+ */
 export default function RegisterPage() {
   const navigate = useNavigate();
   const { register, handleSubmit, formState: { errors } } = useForm<RegisterFormInputs>();
@@ -33,7 +46,7 @@ export default function RegisterPage() {
   });
 
   return (
-    <div className="flex-1 flex items-center justify-center bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 px-4 py-12">
+    <div className="flex-1 flex items-center justify-center bg-neutral-950 px-4 py-12">
       <div className="w-full max-w-md">
         <Card
           title="Crear Cuenta"

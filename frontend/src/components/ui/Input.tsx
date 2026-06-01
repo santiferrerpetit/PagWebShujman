@@ -1,11 +1,52 @@
+/**
+ * @fileoverview Componente Input con label, icono y mensaje de error.
+ * Usa forwardRef para compatibilidad con react-hook-form.
+ */
+
 import { type InputHTMLAttributes, forwardRef } from "react";
 
+/**
+ * Propiedades del componente Input.
+ * Extiende todas las props nativas de HTMLInputElement.
+ */
 type InputProps = InputHTMLAttributes<HTMLInputElement> & {
+  /** Etiqueta descriptiva sobre el input */
   label?: string;
+  /** Mensaje de error que se muestra debajo del input */
   error?: string;
+  /** Icono decorativo a la izquierda del campo */
   icon?: React.ReactNode;
 };
 
+/**
+ * Campo de entrada estilizado con soporte para label, ícono y error.
+ * Implementa forwardRef para ser usado con react-hook-form.
+ *
+ * @component
+ * @param {InputProps} props
+ * @param {string} [props.label] - Etiqueta del campo
+ * @param {string} [props.error] - Mensaje de error a mostrar
+ * @param {ReactNode} [props.icon] - Icono SVG a la izquierda
+ * @param {string} [props.className] - Clases adicionales
+ * @returns {JSX.Element} Input estilizado
+ *
+ * @example
+ * // Con react-hook-form
+ * <Input
+ *   label="Nombre"
+ *   placeholder="Juan"
+ *   {...register("firstName", { required: "Requerido" })}
+ *   error={errors.firstName?.message}
+ * />
+ *
+ * @example
+ * // Con icono
+ * <Input
+ *   label="Email"
+ *   type="email"
+ *   icon={<EmailSVG />}
+ * />
+ */
 const Input = forwardRef<HTMLInputElement, InputProps>(
   ({ label, error, icon, className = "", ...props }, ref) => {
     return (
@@ -25,10 +66,10 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
             ref={ref}
             className={`
               w-full ${icon ? "pl-10" : "pl-4"} pr-4 py-3
-              bg-slate-900/80 border border-slate-700 rounded-xl
+              bg-slate-900 border border-slate-800 rounded-xl
               text-white placeholder-slate-500
-              focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50
-              transition-all
+              focus:outline-none focus:ring-2 focus:ring-blue-600/30 focus:border-blue-600
+              transition-colors
               disabled:opacity-50 disabled:cursor-not-allowed
               ${error ? "border-red-500 focus:border-red-500 focus:ring-red-500/50" : ""}
               ${className}

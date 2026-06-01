@@ -12,19 +12,26 @@ app.use(cors());
 app.use(express.json());
 
 // API Routes - montamos cada módulo en su path
+// Local: /api/*  |  Producción (Apache reescribe /~diez/api/* a /*): /auth, /members, etc.
 app.use("/api/auth", authRoutes);
 app.use("/api/members", membersRoutes);
 app.use("/api/fees", feesRoutes);
-
-// Health check
 app.get("/api/health", (_req, res) => {
   res.json({ status: "ok", timestamp: new Date().toISOString() });
 });
 
-// Static files + SPA fallback (for production build)
-app.use(express.static("public"));
-app.get("*", (_req, res) => {
-  res.sendFile("index.html", { root: "public" });
+// Apache en producción reescribe /~diez/api/* a /* (elimina el prefijo)
+// Así que también montamos sin /api para que funcione en el servidor
+app.use("/auth", authRoutes);
+app.use("/members", membersRoutes);
+app.use("/fees", feesRoutes);
+app.get("/health", (_req, res) => {
+  res.json({ status: "ok", timestamp: new Date().toISOString() });
+});
+
+// Catch-all 404 for undefined API routes (does not serve frontend files)
+app.use((_req, res) => {
+  res.status(404).json({ message: "Ruta no encontrada", code: "NOT_FOUND" });
 });
 
 // Global error handler - SIEMPRE al final

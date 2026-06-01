@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Panel principal (dashboard) con grid de módulos del sistema.
+ * Muestra tarjetas de acceso a Socios, Aranceles y módulos futuros.
+ */
+
 import { Link } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import Card from "@/components/ui/Card";
@@ -66,16 +71,25 @@ const modules = [
   },
 ];
 
+/**
+ * Tarjeta individual de un módulo del dashboard.
+ * Puede ser un enlace clickeable o un elemento deshabilitado con opacidad.
+ *
+ * @component
+ * @param {Object} props
+ * @param {typeof modules[0]} props.mod - Datos del módulo (título, icono, ruta, color, disponibilidad)
+ * @returns {JSX.Element} Tarjeta del módulo
+ */
 function ModuleCard({ mod }: { mod: typeof modules[0] }) {
   const content = (
-    <Card className="h-full hover:border-slate-600 transition-all duration-300 group-hover:shadow-xl">
-      <div className={`w-12 h-12 bg-gradient-to-br ${mod.color} rounded-xl flex items-center justify-center mb-4 shadow-lg`}>
+    <Card className="h-full hover:border-slate-700 transition-colors duration-200">
+      <div className="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center mb-4">
         {mod.icon}
       </div>
       <h3 className="text-lg font-semibold text-white mb-2">{mod.title}</h3>
       <p className="text-slate-400 text-sm">{mod.description}</p>
       {!mod.available && (
-        <span className="inline-block mt-3 text-xs text-slate-500 bg-slate-800 px-2 py-1 rounded-md">
+        <span className="inline-block mt-3 text-xs text-slate-400 bg-slate-800 px-2 py-1 rounded-md">
           Próximamente
         </span>
       )}
@@ -97,6 +111,13 @@ function ModuleCard({ mod }: { mod: typeof modules[0] }) {
   );
 }
 
+/**
+ * Página de dashboard protegida que muestra los módulos disponibles del sistema.
+ * Saluda al usuario por su nombre y muestra su rol actual.
+ *
+ * @component
+ * @returns {JSX.Element} Dashboard con grid de módulos
+ */
 export default function DashboardPage() {
   const { user } = useAuth();
 

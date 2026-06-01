@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Página de gestión de aranceles deportivos.
+ * CRUD de aranceles, tabla de asignaciones con filtro por socio y vista de estados de pago.
+ */
+
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useFees, useAllAssignments } from "@/features/fees/hooks/useFees";
@@ -8,6 +13,14 @@ import Card from "@/components/ui/Card";
 import Alert from "@/components/ui/Alert";
 import type { SportsFee } from "@/features/fees/api/feesApi";
 
+/**
+ * Página de gestión de aranceles.
+ * Permite crear, editar y eliminar aranceles.
+ * Muestra tabla de asignaciones con filtro por socio.
+ *
+ * @component
+ * @returns {JSX.Element} Página de aranceles con CRUD y tabla de asignaciones
+ */
 export default function FeesPage() {
   const { fees, isLoading, error, addFee, editFee, removeFee } = useFees();
   const { assignments, isLoading: assignmentsLoading, error: assignmentsError } = useAllAssignments();
@@ -190,7 +203,7 @@ export default function FeesPage() {
           <select
             value={filterMemberId}
             onChange={(e) => setFilterMemberId(e.target.value)}
-            className="w-full max-w-md px-4 py-3 bg-slate-900/80 border border-slate-700 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all"
+            className="w-full max-w-md px-4 py-3 bg-slate-900 border border-slate-800 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-blue-600/30 focus:border-blue-600 transition-colors"
           >
             <option value="">Todos los socios</option>
             {members.map((m) => (

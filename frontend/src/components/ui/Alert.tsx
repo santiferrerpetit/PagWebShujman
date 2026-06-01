@@ -1,11 +1,25 @@
+/**
+ * @fileoverview Componente Alert - Banner de notificación con icono y variantes de color.
+ */
+
 import { type ReactNode } from "react";
 
+/**
+ * Propiedades del componente Alert.
+ */
 type AlertProps = {
+  /** Contenido del mensaje de alerta */
   children: ReactNode;
+  /**
+   * Tipo de alerta que determina el color y el icono.
+   * @default "error"
+   */
   variant?: "error" | "success" | "warning" | "info";
+  /** Clases CSS adicionales */
   className?: string;
 };
 
+/** Estilos de color por variante */
 const variantStyles = {
   error: "bg-red-500/10 border-red-500/30 text-red-400",
   success: "bg-emerald-500/10 border-emerald-500/30 text-emerald-400",
@@ -13,6 +27,7 @@ const variantStyles = {
   info: "bg-blue-500/10 border-blue-500/30 text-blue-400",
 };
 
+/** Paths SVG de los iconos por variante */
 const iconPaths = {
   error: "M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z",
   success: "M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z",
@@ -20,6 +35,23 @@ const iconPaths = {
   info: "M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zm-1 4a1 1 0 00-1 1v3a1 1 0 002 0V11a1 1 0 00-1-1z",
 };
 
+/**
+ * Componente de alerta para mostrar mensajes de error, éxito, advertencia o información.
+ * Incluye un icono SVG apropiado según la variante.
+ *
+ * @component
+ * @param {AlertProps} props
+ * @param {ReactNode} props.children - Mensaje de la alerta
+ * @param {"error"|"success"|"warning"|"info"} [props.variant="error"] - Tipo de alerta
+ * @param {string} [props.className] - Clases adicionales
+ * @returns {JSX.Element} Banner de alerta
+ *
+ * @example
+ * <Alert variant="success">Socio creado correctamente</Alert>
+ *
+ * @example
+ * <Alert variant="error">{error}</Alert>
+ */
 export default function Alert({ children, variant = "error", className = "" }: AlertProps) {
   return (
     <div className={`rounded-xl p-3 flex items-center gap-2 border ${variantStyles[variant]} ${className}`}>

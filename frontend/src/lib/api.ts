@@ -1,14 +1,50 @@
-export const API_BASE = "http://localhost:3001";
+/**
+ * @fileoverview Cliente HTTP centralizado para comunicación con el backend.
+ * Maneja autenticación JWT automática, errores y cierre de sesión por 401.
+ * Todos los módulos de API usan esta función como base.
+ */
 
+/** URL base del servidor backend. Detecta automáticamente si está en local o en producción. */
+export const API_BASE = window.location.pathname.startsWith("/~")
+  ? `/${window.location.pathname.split("/")[1]}`
+  : "http://localhost:3001";
+
+/**
+ * Opciones extendidas para apiFetch.
+ */
 interface ApiOptions extends RequestInit {
+  /** Si es true, no adjunta el token JWT en el header */
   skipAuth?: boolean;
 }
 
+/**
+ * Error de API con metadatos de estado HTTP.
+ */
 interface ApiError extends Error {
   statusCode?: number;
   code?: string;
 }
 
+/**
+ * Función genérica para realizar peticiones HTTP al backend.
+ * Adjunta automáticamente el token JWT y maneja errores 401 (sesión expirada).
+ *
+ * @template T - Tipo de dato esperado en la respuesta
+ * @param {string} path - Ruta relativa a API_BASE (ej: "/api/auth/me")
+ * @param {ApiOptions} [options={}] - Opciones de fetch (method, body, headers, skipAuth)
+ * @returns {Promise<T>} Datos parseados de la respuesta
+ * @throws {ApiError} Error con statusCode y code cuando la petición falla
+ *
+ * @example
+ * const data = await apiFetch<User[]>("/api/members");
+ *
+ * @example
+ * const result = await apiFetch("/api/auth/login", {
+ *   method: "POST",
+ *   body: JSON.stringify({ username, password }),
+ *   skipAuth: true,
+ * });
+ */
 export async function apiFetch<T = any>(path: string, options: ApiOptions = {}): Promise<T> {
   const url = `${API_BASE}${path}`;
   const headers: Record<string, string> = {

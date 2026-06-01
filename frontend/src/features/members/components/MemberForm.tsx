@@ -1,14 +1,25 @@
+/**
+ * @fileoverview Formulario de creación/edición de socios con react-hook-form.
+ * Soporta modo creación y modo edición cargando datos existentes como defaultValues.
+ */
+
 import { useForm } from "react-hook-form";
 import type { CreateMemberInput, UpdateMemberInput, Member } from "../api/membersApi";
 import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
 import Alert from "@/components/ui/Alert";
 
+/** Propiedades del formulario de socio */
 type MemberFormProps = {
+  /** Socio a editar (null = modo creación) */
   member?: Member | null;
+  /** Callback al enviar el formulario */
   onSubmit: (data: CreateMemberInput | UpdateMemberInput) => void | Promise<void>;
+  /** Callback al cancelar */
   onCancel: () => void;
+  /** Indica que se está procesando la petición */
   isLoading: boolean;
+  /** Mensaje de error a mostrar */
   error: string | null;
 };
 
@@ -22,6 +33,27 @@ type FormInputs = {
   accumulatedDebt: number;
 };
 
+/**
+ * Formulario para crear o editar un socio.
+ * Si recibe `member`, carga sus datos en el formulario para edición.
+ *
+ * @component
+ * @param {MemberFormProps} props
+ * @param {Member|null} [props.member] - Socio a editar (null crea uno nuevo)
+ * @param {Function} props.onSubmit - Callback con los datos del formulario
+ * @param {Function} props.onCancel - Callback al presionar cancelar
+ * @param {boolean} props.isLoading - Estado de carga del botón submit
+ * @param {string|null} props.error - Error a mostrar en el formulario
+ * @returns {JSX.Element} Formulario de socio
+ *
+ * @example
+ * <MemberForm
+ *   onSubmit={handleAdd}
+ *   onCancel={closeForm}
+ *   isLoading={isSubmitting}
+ *   error={formError}
+ * />
+ */
 export default function MemberForm({ member, onSubmit, onCancel, isLoading, error }: MemberFormProps) {
   const isEditing = !!member;
   const { register, handleSubmit, formState: { errors } } = useForm<FormInputs>({
@@ -92,7 +124,7 @@ export default function MemberForm({ member, onSubmit, onCancel, isLoading, erro
           <label className="block text-sm font-medium text-slate-300 mb-2">Cuota social</label>
           <select
             {...register("socialFeePaid")}
-            className="w-full px-4 py-3 bg-slate-900/80 border border-slate-700 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all"
+            className="w-full px-4 py-3 bg-slate-900 border border-slate-800 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-blue-600/30 focus:border-blue-600 transition-colors"
           >
             <option value="false">Pendiente</option>
             <option value="true">Pagada</option>

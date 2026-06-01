@@ -1,3 +1,9 @@
+/**
+ * @fileoverview Componente para gestionar los aranceles de un socio específico.
+ * Permite seleccionar un socio, asignarle aranceles, marcar pagos y desasignar.
+ * Al modificar asignaciones emite "members:refresh" para actualizar otras vistas.
+ */
+
 import { useState } from "react";
 import { useMemberFees, useFees } from "@/features/fees/hooks/useFees";
 import { useMembers } from "@/features/members/hooks/useMembers";
@@ -5,6 +11,18 @@ import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
 import Alert from "@/components/ui/Alert";
 
+/**
+ * Widget para gestionar los aranceles deportivos de un socio.
+ * Selector de socio + selector de arancel + botón asignar.
+ * Tabla de aranceles asignados con toggle de pagado y botón quitar.
+ *
+ * @component
+ * @returns {JSX.Element} Gestor de aranceles por socio
+ *
+ * @example
+ * // Se usa dentro de MembersPage
+ * <MemberFeesManager />
+ */
 export default function MemberFeesManager() {
   const [selectedMemberId, setSelectedMemberId] = useState<string>("");
   const [selectedFeeId, setSelectedFeeId] = useState<string>("");
@@ -52,7 +70,7 @@ export default function MemberFeesManager() {
           <select
             value={selectedMemberId}
             onChange={(e) => setSelectedMemberId(e.target.value)}
-            className="w-full px-4 py-3 bg-slate-900/80 border border-slate-700 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all"
+            className="w-full px-4 py-3 bg-slate-900 border border-slate-800 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-blue-600/30 focus:border-blue-600 transition-colors"
           >
             <option value="">Seleccionar socio...</option>
             {members.map((m) => (
@@ -69,7 +87,7 @@ export default function MemberFeesManager() {
             value={selectedFeeId}
             onChange={(e) => setSelectedFeeId(e.target.value)}
             disabled={!selectedMemberId || availableFees.length === 0}
-            className="w-full px-4 py-3 bg-slate-900/80 border border-slate-700 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all disabled:opacity-50"
+            className="w-full px-4 py-3 bg-slate-900 border border-slate-800 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-blue-600/30 focus:border-blue-600 transition-colors disabled:opacity-50"
           >
             <option value="">
               {!selectedMemberId

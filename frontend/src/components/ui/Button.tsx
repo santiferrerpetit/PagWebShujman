@@ -1,25 +1,70 @@
+/**
+ * @fileoverview Componentes de UI reutilizables con estilos de Tailwind.
+ * Sistema de diseño del club - botones, tarjetas, inputs y alertas.
+ */
+
 import { type ButtonHTMLAttributes, type ReactNode } from "react";
 
+/**
+ * Propiedades del componente Button.
+ * Extiende todas las props nativas de HTMLButtonElement.
+ */
 type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
+  /** Contenido del botón (texto, iconos, etc.) */
   children: ReactNode;
+  /**
+   * Variante visual del botón.
+   * @default "primary"
+   */
   variant?: "primary" | "secondary" | "danger" | "ghost";
+  /**
+   * Tamaño del botón.
+   * @default "md"
+   */
   size?: "sm" | "md" | "lg";
+  /**
+   * Muestra un spinner y deshabilita el botón mientras se ejecuta una acción.
+   * @default false
+   */
   isLoading?: boolean;
 };
 
+/** Mapas de estilos Tailwind por variante */
 const variantStyles = {
-  primary: "bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white shadow-lg shadow-blue-900/30",
-  secondary: "bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white shadow-lg shadow-emerald-900/30",
-  danger: "bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 text-white shadow-lg shadow-red-900/30",
-  ghost: "bg-transparent text-slate-300 hover:text-white hover:bg-slate-700/50 border border-slate-700",
+  primary: "bg-blue-600 hover:bg-blue-700 text-white",
+  secondary: "bg-slate-700 hover:bg-slate-600 text-white",
+  danger: "bg-red-600 hover:bg-red-700 text-white",
+  ghost: "bg-transparent text-slate-300 hover:text-white hover:bg-slate-800 border border-slate-700",
 };
 
+/** Mapas de estilos Tailwind por tamaño */
 const sizeStyles = {
   sm: "px-3 py-2 text-sm",
   md: "px-4 py-3 text-base",
   lg: "px-6 py-4 text-lg",
 };
 
+/**
+ * Componente de botón personalizado con variantes y tamaños.
+ *
+ * @component
+ * @param {ButtonProps} props - Propiedades del botón
+ * @param {ReactNode} props.children - Contenido del botón
+ * @param {"primary"|"secondary"|"danger"|"ghost"} [props.variant="primary"] - Variante visual
+ * @param {"sm"|"md"|"lg"} [props.size="md"] - Tamaño del botón
+ * @param {boolean} [props.isLoading=false] - Estado de carga con spinner
+ * @returns {JSX.Element} Botón estilizado
+ *
+ * @example
+ * <Button variant="primary" size="lg" onClick={handleClick}>
+ *   Guardar
+ * </Button>
+ *
+ * @example
+ * <Button variant="danger" isLoading={isSaving} disabled>
+ *   Eliminar
+ * </Button>
+ */
 export default function Button({
   children,
   variant = "primary",
@@ -35,9 +80,8 @@ export default function Button({
       className={`
         ${variantStyles[variant]}
         ${sizeStyles[size]}
-        font-semibold rounded-xl transition-all duration-300
-        hover:scale-[1.02] active:scale-[0.98]
-        disabled:opacity-70 disabled:cursor-not-allowed disabled:hover:scale-100
+        font-semibold rounded-xl transition-colors duration-200
+        disabled:opacity-70 disabled:cursor-not-allowed
         flex items-center justify-center gap-2
         ${className}
       `}

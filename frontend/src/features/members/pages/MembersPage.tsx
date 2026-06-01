@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Página de gestión de socios con formulario de creación/edición,
+ * tabla de socios y gestor de aranceles por socio.
+ */
+
 import { useState } from "react";
 import { useMembers } from "@/features/members/hooks/useMembers";
 import MemberList from "@/features/members/components/MemberList";
@@ -7,6 +12,13 @@ import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
 import type { Member, CreateMemberInput, UpdateMemberInput } from "@/features/members/api/membersApi";
 
+/**
+ * Página principal de gestión de socios.
+ * Integra creación, edición, eliminación y asignación de aranceles.
+ *
+ * @component
+ * @returns {JSX.Element} Página de socios con CRUD y gestor de aranceles
+ */
 export default function MembersPage() {
   const { members, isLoading, error, addMember, editMember, removeMember } = useMembers();
   const [showForm, setShowForm] = useState(false);

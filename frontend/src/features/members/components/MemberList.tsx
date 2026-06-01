@@ -1,15 +1,48 @@
+/**
+ * @fileoverview Tabla de socios con columnas de nombre, DNI, contacto, cuota social, deuda y acciones.
+ * Maneja estados de carga, error y vacío.
+ */
+
 import type { Member } from "../api/membersApi";
 import Button from "@/components/ui/Button";
 import Alert from "@/components/ui/Alert";
 
+/** Propiedades de la tabla de socios */
 type MemberListProps = {
+  /** Lista de socios a mostrar */
   members: Member[];
+  /** Estado de carga */
   isLoading: boolean;
+  /** Mensaje de error */
   error: string | null;
+  /** Callback al presionar editar */
   onEdit: (member: Member) => void;
+  /** Callback al presionar eliminar */
   onDelete: (id: number) => void;
 };
 
+/**
+ * Componente que renderiza una tabla con los socios del club.
+ * Muestra spinner en carga, alerta en error y mensaje si no hay registros.
+ *
+ * @component
+ * @param {MemberListProps} props
+ * @param {Member[]} props.members - Lista de socios
+ * @param {boolean} props.isLoading - Estado de carga
+ * @param {string|null} props.error - Mensaje de error
+ * @param {Function} props.onEdit - Callback de edición
+ * @param {Function} props.onDelete - Callback de eliminación
+ * @returns {JSX.Element} Tabla de socios o estado correspondiente
+ *
+ * @example
+ * <MemberList
+ *   members={members}
+ *   isLoading={isLoading}
+ *   error={error}
+ *   onEdit={openEdit}
+ *   onDelete={handleDelete}
+ * />
+ */
 export default function MemberList({ members, isLoading, error, onEdit, onDelete }: MemberListProps) {
   if (isLoading) {
     return (

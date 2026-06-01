@@ -1,3 +1,10 @@
+/**
+ * @fileoverview Hooks para gestión de socios (CRUD completo).
+ * useMembers: lista, crea, edita y elimina socios.
+ * useMember: obtiene un socio individual por ID.
+ * Escucha el evento "members:refresh" para refrescar la lista automáticamente.
+ */
+
 import { useState, useEffect, useCallback } from "react";
 import {
   getMembers,
@@ -10,6 +17,22 @@ import {
   type UpdateMemberInput,
 } from "../api/membersApi";
 
+/**
+ * Hook principal para la gestión de socios.
+ * Carga la lista al montar y escucha refrescos automáticos vía evento "members:refresh".
+ *
+ * @returns {Object} Estado y acciones CRUD
+ * @returns {Member[]} returns.members - Lista de socios
+ * @returns {boolean} returns.isLoading - Carga en curso
+ * @returns {string|null} returns.error - Mensaje de error
+ * @returns {Function} returns.fetchMembers - Refresca la lista manualmente
+ * @returns {Function} returns.addMember - (data: CreateMemberInput) => Promise<Member | null>
+ * @returns {Function} returns.editMember - (id: number, data: UpdateMemberInput) => Promise<Member | null>
+ * @returns {Function} returns.removeMember - (id: number) => Promise<boolean>
+ *
+ * @example
+ * const { members, addMember, removeMember, isLoading } = useMembers();
+ */
 export function useMembers() {
   const [members, setMembers] = useState<Member[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -87,6 +110,20 @@ export function useMembers() {
   };
 }
 
+/**
+ * Hook para obtener un socio específico por ID.
+ * Se recarga automáticamente si cambia el ID.
+ *
+ * @param {number|null} id - ID del socio a buscar (null = no buscar)
+ * @returns {Object} Estado del socio
+ * @returns {Member|null} returns.member - Socio encontrado o null
+ * @returns {boolean} returns.isLoading - Carga en curso
+ * @returns {string|null} returns.error - Mensaje de error
+ * @returns {Function} returns.refetch - Refresca manualmente los datos
+ *
+ * @example
+ * const { member, isLoading } = useMember(socioId);
+ */
 export function useMember(id: number | null) {
   const [member, setMember] = useState<Member | null>(null);
   const [isLoading, setIsLoading] = useState(false);

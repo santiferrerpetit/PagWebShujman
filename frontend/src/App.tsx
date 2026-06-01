@@ -1,3 +1,12 @@
+/**
+ * @fileoverview Punto de entrada de la aplicación React.
+ * Configura React Router con lazy loading, AuthProvider global y layout base.
+ * Cada página se carga bajo demanda para optimizar el bundle inicial.
+ *
+ * @author Alumno
+ * @version 1.0.0
+ */
+
 import { Suspense, lazy } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/context/AuthContext";
@@ -12,6 +21,10 @@ const DashboardPage = lazy(() => import("@/pages/DashboardPage"));
 const MembersPage = lazy(() => import("@/features/members/pages/MembersPage"));
 const FeesPage = lazy(() => import("@/features/fees/pages/FeesPage"));
 
+/**
+ * Fallback mostrado mientras se carga una página en modo lazy.
+ * @returns {JSX.Element} Spinner centrado
+ */
 function LoadingFallback() {
   return (
     <div className="flex-1 flex items-center justify-center bg-neutral-950">
@@ -24,6 +37,13 @@ const basename = window.location.pathname.startsWith("/~")
   ? `/${window.location.pathname.split("/")[1]}`
   : "/";
 
+/**
+ * Componente raíz de la aplicación.
+ * Provee el contexto de autenticación, el router y la estructura de layout (Navbar + rutas).
+ *
+ * @component
+ * @returns {JSX.Element} Árbol completo de la aplicación
+ */
 export default function App() {
   return (
     <AuthProvider>
