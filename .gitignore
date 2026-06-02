@@ -43,6 +43,10 @@ dev.db
 .vscode/
 .idea/
 
+# deploy keys
+deploy_key*
+!deploy_key*.example
+
 # executables / compiled
 *.exe
 *.out

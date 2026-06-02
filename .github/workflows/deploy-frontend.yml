@@ -3,6 +3,9 @@ name: Desplegar Frontend
 on:
   push:
     branches: ["main"]
+    paths:
+      - "frontend/**"
+      - ".github/workflows/deploy-frontend.yml"
 
 jobs:
   deploy:
@@ -16,29 +19,30 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
 
       - name: Instalar dependencias
-        run: |
-          cd frontend
-          npm ci
+        working-directory: frontend
+        run: npm ci
 
       - name: Compilar la app
-        run: |
-          cd frontend
-          npm run build
+        working-directory: frontend
+        run: npm run build
 
       - name: Instalar sshpass
         run: sudo apt-get update && sudo apt-get install -y sshpass
 
-      - name: Desplegar archivos al servidor (pipeline directo)
+      - name: Desplegar archivos al servidor con rsync
         env:
           SERVER_PASSWORD: ${{ secrets.SERVER_PASSWORD }}
           SERVER_USER: ${{ secrets.SERVER_USER }}
           SERVER_HOST: ${{ secrets.SERVER_HOST }}
         run: |
-          tar -czf - -C frontend/dist . | \
-          sshpass -p "$SERVER_PASSWORD" ssh -p 22002 \
-            -o StrictHostKeyChecking=no \
-            -o UserKnownHostsFile=/dev/null \
-            "$SERVER_USER@$SERVER_HOST" \
-            "sudo rm -rf /var/www/html/* && sudo tar -xzf - -C /var/www/html/ && sudo systemctl restart nginx && echo 'Despliegue completado'"
+          sshpass -p "$SERVER_PASSWORD" rsync -avz --delete \
+            -e "ssh -p 22002 -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" \
+            frontend/dist/ \
+            "$SERVER_USER@$SERVER_HOST:~/public_html/"
+
+      - name: Confirmar despliegue
+        run: echo "Despliegue completado exitosamente"
