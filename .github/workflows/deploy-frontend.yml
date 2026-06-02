@@ -18,12 +18,26 @@ jobs:
           node-version: '20'
 
       - name: Instalar dependencias
-        working-directory: frontend
-        run: npm ci
+        run: |
+          cd frontend
+          npm ci
 
       - name: Compilar la app
-        working-directory: frontend
-        run: npm run build
+        run: |
+          cd frontend
+          npm run build
+
+      - name: Subir artefacto de la compilación
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-compilada
+          path: frontend/dist
+
+      - name: Descargar artefacto compilado
+        uses: actions/download-artifact@v4
+        with:
+          name: app-compilada
+          path: build-temp
 
       - name: Copiar archivos al servidor
         uses: appleboy/scp-action@v0.1.7
@@ -31,9 +45,9 @@ jobs:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SERVER_SSH_KEY }}
-          source: "frontend/dist/*"
+          source: "build-temp/*"
           target: "/var/www/html"
-          strip_components: 2
+          strip_components: 1
           overwrite: true
 
       - name: Reiniciar servidor web
