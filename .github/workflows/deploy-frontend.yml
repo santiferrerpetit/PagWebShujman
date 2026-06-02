@@ -42,26 +42,15 @@ jobs:
       - name: Instalar sshpass
         run: sudo apt-get update && sudo apt-get install -y sshpass
 
-      - name: Crear directorio destino en servidor
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.SERVER_HOST }}
-          username: ${{ secrets.SERVER_USER }}
-          password: ${{ secrets.SERVER_PASSWORD }}
-          port: 22002
-          script: |
-            mkdir -p /var/www/html
-            echo "Directorio listo"
-
-      - name: Copiar archivos al servidor
+      - name: Copiar archivos al home del usuario en el servidor
         env:
           SERVER_PASSWORD: ${{ secrets.SERVER_PASSWORD }}
           SERVER_USER: ${{ secrets.SERVER_USER }}
           SERVER_HOST: ${{ secrets.SERVER_HOST }}
         run: |
-          sshpass -p "$SERVER_PASSWORD" scp -P 22002 -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -r build-temp/* "$SERVER_USER@$SERVER_HOST:/var/www/html/"
+          sshpass -p "$SERVER_PASSWORD" scp -P 22002 -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -r build-temp/* "$SERVER_USER@$SERVER_HOST:~/deploy-temp/"
 
-      - name: Reiniciar servidor web
+      - name: Mover archivos a /var/www/html y reiniciar nginx
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.SERVER_HOST }}
@@ -69,5 +58,8 @@ jobs:
           password: ${{ secrets.SERVER_PASSWORD }}
           port: 22002
           script: |
+            sudo mkdir -p /var/www/html
+            sudo rm -rf /var/www/html/*
+            sudo cp -r ~/deploy-temp/* /var/www/html/
             sudo systemctl restart nginx
             echo "Despliegue completado"
