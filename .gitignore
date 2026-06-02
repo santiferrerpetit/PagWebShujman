@@ -49,8 +49,6 @@ dev.db
 *.so
 *.dll
 
-package-lock.json
-
 # agent / internal docs
 .opencode/
 .opencoe/
