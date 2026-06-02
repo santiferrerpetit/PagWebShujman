@@ -56,3 +56,4 @@ JWT_SECRET="tu-clave-secreta-aqui"
 - Registro e inicio de sesión de usuarios
 - Protección de rutas con JWT
 - Diseño moderno con Tailwind CSS
+
