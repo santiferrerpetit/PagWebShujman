@@ -1,25 +1,23 @@
-/**
- * @fileoverview Formulario de creación/edición de socios con react-hook-form.
- * Soporta modo creación y modo edición cargando datos existentes como defaultValues.
- */
-
 import { useForm } from "react-hook-form";
 import type { CreateMemberInput, UpdateMemberInput, Member } from "../api/membersApi";
-import Button from "@/components/ui/Button";
-import Input from "@/components/ui/Input";
-import Alert from "@/components/ui/Alert";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Loader2 } from "lucide-react";
 
-/** Propiedades del formulario de socio */
 type MemberFormProps = {
-  /** Socio a editar (null = modo creación) */
   member?: Member | null;
-  /** Callback al enviar el formulario */
   onSubmit: (data: CreateMemberInput | UpdateMemberInput) => void | Promise<void>;
-  /** Callback al cancelar */
   onCancel: () => void;
-  /** Indica que se está procesando la petición */
   isLoading: boolean;
-  /** Mensaje de error a mostrar */
   error: string | null;
 };
 
@@ -33,27 +31,6 @@ type FormInputs = {
   accumulatedDebt: number;
 };
 
-/**
- * Formulario para crear o editar un socio.
- * Si recibe `member`, carga sus datos en el formulario para edición.
- *
- * @component
- * @param {MemberFormProps} props
- * @param {Member|null} [props.member] - Socio a editar (null crea uno nuevo)
- * @param {Function} props.onSubmit - Callback con los datos del formulario
- * @param {Function} props.onCancel - Callback al presionar cancelar
- * @param {boolean} props.isLoading - Estado de carga del botón submit
- * @param {string|null} props.error - Error a mostrar en el formulario
- * @returns {JSX.Element} Formulario de socio
- *
- * @example
- * <MemberForm
- *   onSubmit={handleAdd}
- *   onCancel={closeForm}
- *   isLoading={isSubmitting}
- *   error={formError}
- * />
- */
 export default function MemberForm({ member, onSubmit, onCancel, isLoading, error }: MemberFormProps) {
   const isEditing = !!member;
   const { register, handleSubmit, formState: { errors } } = useForm<FormInputs>({
@@ -82,69 +59,94 @@ export default function MemberForm({ member, onSubmit, onCancel, isLoading, erro
   });
 
   return (
-    <form onSubmit={handleFormSubmit} className="space-y-5">
-      <div className="grid grid-cols-2 gap-4">
-        <Input
-          label="Nombre"
-          placeholder="Juan"
-          {...register("firstName", { required: "El nombre es requerido" })}
-          error={errors.firstName?.message}
-        />
-        <Input
-          label="Apellido"
-          placeholder="Pérez"
-          {...register("lastName", { required: "El apellido es requerido" })}
-          error={errors.lastName?.message}
-        />
-      </div>
-
-      <div className="grid grid-cols-2 gap-4">
-        <Input
-          label="DNI"
-          placeholder="12345678"
-          {...register("dni", { required: "El DNI es requerido" })}
-          error={errors.dni?.message}
-        />
-        <Input
-          label="Fecha de nacimiento"
-          type="date"
-          {...register("birthDate", { required: "La fecha de nacimiento es requerida" })}
-          error={errors.birthDate?.message}
-        />
-      </div>
-
-      <Input
-        label="Contacto (teléfono/email)"
-        placeholder="341-555-1234"
-        {...register("contact")}
-      />
-
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <label className="block text-sm font-medium text-slate-300 mb-2">Cuota social</label>
-          <select
-            {...register("socialFeePaid")}
-            className="w-full px-4 py-3 bg-slate-900 border border-slate-800 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-blue-600/30 focus:border-blue-600 transition-colors"
-          >
-            <option value="false">Pendiente</option>
-            <option value="true">Pagada</option>
-          </select>
+    <form onSubmit={handleFormSubmit} className="flex flex-col gap-4">
+      <div className="grid grid-cols-2 gap-3">
+        <div className="flex flex-col gap-2">
+          <Label htmlFor="firstName">Nombre</Label>
+          <Input
+            id="firstName"
+            placeholder="Juan"
+            {...register("firstName", { required: "El nombre es requerido" })}
+            aria-invalid={errors.firstName ? "true" : "false"}
+          />
+          {errors.firstName && <p className="text-xs text-destructive">{errors.firstName.message}</p>}
         </div>
-        <Input
-          label="Deuda acumulada ($)"
-          type="number"
-          step="0.01"
-          {...register("accumulatedDebt", { valueAsNumber: true })}
-        />
+        <div className="flex flex-col gap-2">
+          <Label htmlFor="lastName">Apellido</Label>
+          <Input
+            id="lastName"
+            placeholder="Pérez"
+            {...register("lastName", { required: "El apellido es requerido" })}
+            aria-invalid={errors.lastName ? "true" : "false"}
+          />
+          {errors.lastName && <p className="text-xs text-destructive">{errors.lastName.message}</p>}
+        </div>
       </div>
 
-      {error && <Alert>{error}</Alert>}
+      <div className="grid grid-cols-2 gap-3">
+        <div className="flex flex-col gap-2">
+          <Label htmlFor="dni">DNI</Label>
+          <Input
+            id="dni"
+            placeholder="12345678"
+            {...register("dni", { required: "El DNI es requerido" })}
+            aria-invalid={errors.dni ? "true" : "false"}
+          />
+          {errors.dni && <p className="text-xs text-destructive">{errors.dni.message}</p>}
+        </div>
+        <div className="flex flex-col gap-2">
+          <Label htmlFor="birthDate">Fecha de nacimiento</Label>
+          <Input
+            id="birthDate"
+            type="date"
+            {...register("birthDate", { required: "La fecha de nacimiento es requerida" })}
+            aria-invalid={errors.birthDate ? "true" : "false"}
+          />
+          {errors.birthDate && <p className="text-xs text-destructive">{errors.birthDate.message}</p>}
+        </div>
+      </div>
 
-      <div className="flex gap-3 pt-2">
-        <Button type="submit" isLoading={isLoading} className="flex-1">
+      <div className="flex flex-col gap-2">
+        <Label htmlFor="contact">Contacto (teléfono/email)</Label>
+        <Input id="contact" placeholder="341-555-1234" {...register("contact")} />
+      </div>
+
+      <div className="grid grid-cols-2 gap-3">
+        <div className="flex flex-col gap-2">
+          <Label htmlFor="socialFeePaid">Cuota social</Label>
+          <Select defaultValue={member?.socialFeePaid ? "true" : "false"}>
+            <SelectTrigger id="socialFeePaid">
+              <SelectValue placeholder="Seleccionar..." />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="false">Pendiente</SelectItem>
+              <SelectItem value="true">Pagada</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="flex flex-col gap-2">
+          <Label htmlFor="accumulatedDebt">Deuda acumulada ($)</Label>
+          <Input
+            id="accumulatedDebt"
+            type="number"
+            step="0.01"
+            {...register("accumulatedDebt", { valueAsNumber: true })}
+          />
+        </div>
+      </div>
+
+      {error && (
+        <Alert variant="destructive">
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
+
+      <div className="flex gap-3 pt-1">
+        <Button type="submit" disabled={isLoading} className="flex-1">
+          {isLoading && <Loader2 data-icon="inline-start" className="animate-spin" />}
           {isEditing ? "Guardar cambios" : "Crear socio"}
         </Button>
-        <Button type="button" variant="ghost" onClick={onCancel} className="flex-1">
+        <Button type="button" variant="outline" onClick={onCancel} className="flex-1">
           Cancelar
         </Button>
       </div>

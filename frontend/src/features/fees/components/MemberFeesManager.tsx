@@ -1,28 +1,29 @@
-/**
- * @fileoverview Componente para gestionar los aranceles de un socio específico.
- * Permite seleccionar un socio, asignarle aranceles, marcar pagos y desasignar.
- * Al modificar asignaciones emite "members:refresh" para actualizar otras vistas.
- */
-
 import { useState } from "react";
 import { useMemberFees, useFees } from "@/features/fees/hooks/useFees";
 import { useMembers } from "@/features/members/hooks/useMembers";
-import Button from "@/components/ui/Button";
-import Card from "@/components/ui/Card";
-import Alert from "@/components/ui/Alert";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
+import { Receipt } from "lucide-react";
 
-/**
- * Widget para gestionar los aranceles deportivos de un socio.
- * Selector de socio + selector de arancel + botón asignar.
- * Tabla de aranceles asignados con toggle de pagado y botón quitar.
- *
- * @component
- * @returns {JSX.Element} Gestor de aranceles por socio
- *
- * @example
- * // Se usa dentro de MembersPage
- * <MemberFeesManager />
- */
 export default function MemberFeesManager() {
   const [selectedMemberId, setSelectedMemberId] = useState<string>("");
   const [selectedFeeId, setSelectedFeeId] = useState<string>("");
@@ -64,122 +65,127 @@ export default function MemberFeesManager() {
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
-        <div>
-          <label className="block text-sm font-medium text-slate-300 mb-2">Socio</label>
-          <select
-            value={selectedMemberId}
-            onChange={(e) => setSelectedMemberId(e.target.value)}
-            className="w-full px-4 py-3 bg-slate-900 border border-slate-800 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-blue-600/30 focus:border-blue-600 transition-colors"
-          >
-            <option value="">Seleccionar socio...</option>
-            {members.map((m) => (
-              <option key={m.id} value={m.id}>
-                {m.firstName} {m.lastName} ({m.dni})
-              </option>
-            ))}
-          </select>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 items-end">
+        <div className="flex flex-col gap-2">
+          <Label htmlFor="memberSelect">Socio</Label>
+          <Select value={selectedMemberId} onValueChange={(v) => setSelectedMemberId(v ?? "")}>
+            <SelectTrigger id="memberSelect">
+              <SelectValue placeholder="Seleccionar socio..." />
+            </SelectTrigger>
+            <SelectContent>
+              {members.map((m) => (
+                <SelectItem key={m.id} value={String(m.id)}>
+                  {m.firstName} {m.lastName} ({m.dni})
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
 
-        <div>
-          <label className="block text-sm font-medium text-slate-300 mb-2">Arancel a asignar</label>
-          <select
-            value={selectedFeeId}
-            onChange={(e) => setSelectedFeeId(e.target.value)}
-            disabled={!selectedMemberId || availableFees.length === 0}
-            className="w-full px-4 py-3 bg-slate-900 border border-slate-800 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-blue-600/30 focus:border-blue-600 transition-colors disabled:opacity-50"
-          >
-            <option value="">
-              {!selectedMemberId
-                ? "Primero selecciona un socio"
-                : availableFees.length === 0
-                ? "No hay aranceles disponibles"
-                : "Seleccionar arancel..."}
-            </option>
-            {availableFees.map((fee) => (
-              <option key={fee.id} value={fee.id}>
-                {fee.name} - ${Number(fee.amount).toFixed(2)}
-              </option>
-            ))}
-          </select>
+        <div className="flex flex-col gap-2">
+          <Label htmlFor="feeSelect">Arancel a asignar</Label>
+          <Select value={selectedFeeId} onValueChange={(v) => setSelectedFeeId(v ?? "")} disabled={!selectedMemberId || availableFees.length === 0}>
+            <SelectTrigger id="feeSelect">
+              <SelectValue placeholder={
+                !selectedMemberId
+                  ? "Primero selecciona un socio"
+                  : availableFees.length === 0
+                  ? "No hay aranceles disponibles"
+                  : "Seleccionar arancel..."
+              } />
+            </SelectTrigger>
+            <SelectContent>
+              {availableFees.map((fee) => (
+                <SelectItem key={fee.id} value={String(fee.id)}>
+                  {fee.name} - ${Number(fee.amount).toFixed(2)}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
 
         <Button
           onClick={handleAssign}
           disabled={!selectedMemberId || !selectedFeeId}
-          variant="secondary"
+          variant="outline"
         >
           Asignar Arancel
         </Button>
       </div>
 
       {selectedMemberId && (
-        <Card title="Aranceles del Socio">
-          {isLoading ? (
-            <div className="flex justify-center py-12">
-              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500" />
-            </div>
-          ) : error ? (
-            <Alert>{error}</Alert>
-          ) : memberFees.length === 0 ? (
-            <div className="text-center py-8 text-slate-400">
-              <p>Este socio no tiene aranceles asignados</p>
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-left">
-                <thead>
-                  <tr className="border-b border-slate-700">
-                    <th className="pb-3 text-slate-400 font-medium text-sm">Arancel</th>
-                    <th className="pb-3 text-slate-400 font-medium text-sm">Monto</th>
-                    <th className="pb-3 text-slate-400 font-medium text-sm">Estado</th>
-                    <th className="pb-3 text-slate-400 font-medium text-sm text-right">Acciones</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-700/50">
-                  {memberFees.map((mf) => (
-                    <tr key={mf.id} className="hover:bg-slate-800/50 transition-colors">
-                      <td className="py-4 text-white font-medium">{mf.fee.name}</td>
-                      <td className="py-4 text-slate-300">${Number(mf.fee.amount).toFixed(2)}</td>
-                      <td className="py-4">
-                        <span
-                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                            mf.paid
-                              ? "bg-emerald-500/20 text-emerald-400"
-                              : "bg-red-500/20 text-red-400"
-                          }`}
-                        >
-                          {mf.paid ? "Pagado" : "Pendiente"}
-                        </span>
-                      </td>
-                      <td className="py-4 text-right space-x-2">
-                        <Button
-                          variant={mf.paid ? "danger" : "primary"}
-                          size="sm"
-                          onClick={() =>
-                            handleToggle({
-                              memberId: mf.memberId,
-                              feeId: mf.feeId,
-                              paid: !mf.paid,
-                            })
-                          }
-                        >
-                          {mf.paid ? "Marcar pendiente" : "Marcar pagado"}
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleRemove(mf.feeId)}
-                        >
-                          Quitar
-                        </Button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base font-medium">Aranceles del Socio</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {isLoading ? (
+              <div className="flex flex-col gap-3">
+                <Skeleton className="h-8 w-full" />
+                <Skeleton className="h-8 w-full" />
+              </div>
+            ) : error ? (
+              <Alert variant="destructive">
+                <AlertDescription>{error}</AlertDescription>
+              </Alert>
+            ) : memberFees.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-8 text-muted-foreground text-sm">
+                <Receipt className="size-8 mb-2 opacity-40" />
+                <p>Este socio no tiene aranceles asignados</p>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Arancel</TableHead>
+                      <TableHead>Monto</TableHead>
+                      <TableHead>Estado</TableHead>
+                      <TableHead className="text-right">Acciones</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {memberFees.map((mf) => (
+                      <TableRow key={mf.id}>
+                        <TableCell className="font-medium">{mf.fee.name}</TableCell>
+                        <TableCell>${Number(mf.fee.amount).toFixed(2)}</TableCell>
+                        <TableCell>
+                          <Badge variant={mf.paid ? "secondary" : "destructive"}>
+                            {mf.paid ? "Pagado" : "Pendiente"}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex items-center justify-end gap-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() =>
+                                handleToggle({
+                                  memberId: mf.memberId,
+                                  feeId: mf.feeId,
+                                  paid: !mf.paid,
+                                })
+                              }
+                            >
+                              {mf.paid ? "Marcar pendiente" : "Marcar pagado"}
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="text-destructive hover:text-destructive"
+                              onClick={() => handleRemove(mf.feeId)}
+                            >
+                              Quitar
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            )}
+          </CardContent>
         </Card>
       )}
     </div>

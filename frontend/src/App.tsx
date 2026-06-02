@@ -1,19 +1,12 @@
-/**
- * @fileoverview Punto de entrada de la aplicación React.
- * Configura React Router con lazy loading, AuthProvider global y layout base.
- * Cada página se carga bajo demanda para optimizar el bundle inicial.
- *
- * @author Alumno
- * @version 1.0.0
- */
-
 import { Suspense, lazy } from "react";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
+import { AnimatePresence, motion } from "motion/react";
 import { AuthProvider } from "@/context/AuthContext";
+import { Toaster } from "@/components/ui/sonner";
+import { Skeleton } from "@/components/ui/skeleton";
 import Navbar from "@/components/Navbar";
 import ProtectedRoute from "@/components/ProtectedRoute";
 
-// Lazy loading de páginas para mejorar performance del bundle
 const HomePage = lazy(() => import("@/pages/HomePage"));
 const LoginPage = lazy(() => import("@/features/auth/pages/LoginPage"));
 const RegisterPage = lazy(() => import("@/features/auth/pages/RegisterPage"));
@@ -21,15 +14,58 @@ const DashboardPage = lazy(() => import("@/pages/DashboardPage"));
 const MembersPage = lazy(() => import("@/features/members/pages/MembersPage"));
 const FeesPage = lazy(() => import("@/features/fees/pages/FeesPage"));
 
-/**
- * Fallback mostrado mientras se carga una página en modo lazy.
- * @returns {JSX.Element} Spinner centrado
- */
 function LoadingFallback() {
   return (
-    <div className="flex-1 flex items-center justify-center bg-neutral-950">
-      <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500" />
+    <div className="flex-1 flex flex-col items-center justify-center gap-4">
+      <Skeleton className="h-8 w-48" />
+      <Skeleton className="h-4 w-32" />
     </div>
+  );
+}
+
+function AnimatedRoutes() {
+  const location = useLocation();
+  return (
+    <AnimatePresence mode="wait">
+      <motion.div
+        key={location.pathname}
+        initial={{ opacity: 0, y: 6 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -6 }}
+        transition={{ duration: 0.2, ease: "easeInOut" as const }}
+        className="flex-1 flex flex-col"
+      >
+        <Routes location={location}>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/auth/login" element={<LoginPage />} />
+          <Route path="/auth/register" element={<RegisterPage />} />
+          <Route
+            path="/dashboard"
+            element={
+              <ProtectedRoute>
+                <DashboardPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/members"
+            element={
+              <ProtectedRoute>
+                <MembersPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/fees"
+            element={
+              <ProtectedRoute>
+                <FeesPage />
+              </ProtectedRoute>
+            }
+          />
+        </Routes>
+      </motion.div>
+    </AnimatePresence>
   );
 }
 
@@ -37,50 +73,16 @@ const basename = window.location.pathname.startsWith("/~")
   ? `/${window.location.pathname.split("/")[1]}`
   : "/";
 
-/**
- * Componente raíz de la aplicación.
- * Provee el contexto de autenticación, el router y la estructura de layout (Navbar + rutas).
- *
- * @component
- * @returns {JSX.Element} Árbol completo de la aplicación
- */
 export default function App() {
   return (
     <AuthProvider>
       <BrowserRouter basename={basename}>
-        <div className="min-h-full flex flex-col bg-neutral-950 text-white">
+        <div className="min-h-screen flex flex-col bg-background text-foreground">
           <Navbar />
           <Suspense fallback={<LoadingFallback />}>
-            <Routes>
-              <Route path="/" element={<HomePage />} />
-              <Route path="/auth/login" element={<LoginPage />} />
-              <Route path="/auth/register" element={<RegisterPage />} />
-              <Route
-                path="/dashboard"
-                element={
-                  <ProtectedRoute>
-                    <DashboardPage />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/members"
-                element={
-                  <ProtectedRoute>
-                    <MembersPage />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/fees"
-                element={
-                  <ProtectedRoute>
-                    <FeesPage />
-                  </ProtectedRoute>
-                }
-              />
-            </Routes>
+            <AnimatedRoutes />
           </Suspense>
+          <Toaster />
         </div>
       </BrowserRouter>
     </AuthProvider>
