@@ -13,6 +13,9 @@ const RegisterPage = lazy(() => import("@/features/auth/pages/RegisterPage"));
 const DashboardPage = lazy(() => import("@/pages/DashboardPage"));
 const MembersPage = lazy(() => import("@/features/members/pages/MembersPage"));
 const FeesPage = lazy(() => import("@/features/fees/pages/FeesPage"));
+const DisciplinesPage = lazy(() => import("@/features/disciplines/pages/DisciplinesPage"));
+const DisciplineDetailPage = lazy(() => import("@/features/disciplines/pages/DisciplineDetailPage"));
+const GroupDetailPage = lazy(() => import("@/features/disciplines/pages/GroupDetailPage"));
 
 function LoadingFallback() {
   return (
@@ -60,6 +63,30 @@ function AnimatedRoutes() {
             element={
               <ProtectedRoute>
                 <FeesPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/disciplines"
+            element={
+              <ProtectedRoute>
+                <DisciplinesPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/disciplines/:id"
+            element={
+              <ProtectedRoute>
+                <DisciplineDetailPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/groups/:id"
+            element={
+              <ProtectedRoute>
+                <GroupDetailPage />
               </ProtectedRoute>
             }
           />

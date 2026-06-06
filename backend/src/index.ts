@@ -4,6 +4,8 @@ import cors from "cors";
 import authRoutes from "./modules/auth/auth.routes";
 import membersRoutes from "./modules/members/members.routes";
 import feesRoutes from "./modules/fees/fees.routes";
+import disciplinesRoutes from "./modules/disciplines/disciplines.routes";
+import socialFeesRoutes from "./modules/social-fees/social-fees.routes";
 import { errorHandler } from "./middleware/errorHandler";
 
 const app = express();
@@ -16,6 +18,8 @@ app.use(express.json());
 app.use("/api/auth", authRoutes);
 app.use("/api/members", membersRoutes);
 app.use("/api/fees", feesRoutes);
+app.use("/api/disciplines", disciplinesRoutes);
+app.use("/api/social-fees", socialFeesRoutes);
 app.get("/api/health", (_req, res) => {
   res.json({ status: "ok", timestamp: new Date().toISOString() });
 });
@@ -25,6 +29,8 @@ app.get("/api/health", (_req, res) => {
 app.use("/auth", authRoutes);
 app.use("/members", membersRoutes);
 app.use("/fees", feesRoutes);
+app.use("/disciplines", disciplinesRoutes);
+app.use("/social-fees", socialFeesRoutes);
 app.get("/health", (_req, res) => {
   res.json({ status: "ok", timestamp: new Date().toISOString() });
 });

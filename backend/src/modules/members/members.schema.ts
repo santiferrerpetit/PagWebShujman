@@ -1,15 +1,15 @@
 import { z } from "zod";
 
 export const createMemberSchema = z.object({
-  firstName: z.string().min(1, "El nombre es requerido"),
-  lastName: z.string().min(1, "El apellido es requerido"),
-  dni: z.string().min(1, "El DNI es requerido"),
+  firstName: z.string().min(1, "El nombre es requerido").max(100),
+  lastName: z.string().min(1, "El apellido es requerido").max(100),
+  dni: z.string().min(1, "El DNI es requerido").max(20),
   birthDate: z.string().refine((val) => !isNaN(Date.parse(val)), {
     message: "Fecha de nacimiento inválida",
   }),
-  contact: z.string().optional(),
-  socialFeePaid: z.coerce.boolean().default(false),
-  accumulatedDebt: z.number().default(0),
+  email: z.string().email("Email inválido").optional().or(z.literal("")),
+  phone: z.string().max(50).optional().or(z.literal("")),
+  isActive: z.coerce.boolean().default(true),
 });
 
 export const updateMemberSchema = createMemberSchema.partial();
