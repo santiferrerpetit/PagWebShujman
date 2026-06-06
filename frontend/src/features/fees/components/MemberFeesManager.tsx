@@ -59,8 +59,13 @@ export default function MemberFeesManager() {
     window.dispatchEvent(new Event("members:refresh"));
   };
 
+  const selectedMember = members.find((m) => String(m.id) === selectedMemberId);
+  const selectedFee = fees.find((f) => String(f.id) === selectedFeeId);
+
   const availableFees = fees.filter(
-    (fee) => !memberFees.some((mf) => mf.feeId === fee.id)
+    (fee) =>
+      !memberFees.some((mf) => mf.feeId === fee.id) &&
+      fee.category === selectedMember?.category
   );
 
   return (
@@ -68,9 +73,11 @@ export default function MemberFeesManager() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3 items-end">
         <div className="flex flex-col gap-2">
           <Label htmlFor="memberSelect">Socio</Label>
-          <Select value={selectedMemberId} onValueChange={(v) => setSelectedMemberId(v ?? "")}>
+          <Select value={selectedMemberId} onValueChange={(v) => { setSelectedMemberId(v ?? ""); setSelectedFeeId(""); }}>
             <SelectTrigger id="memberSelect">
-              <SelectValue placeholder="Seleccionar socio..." />
+              <SelectValue placeholder="Seleccionar socio...">
+                {selectedMember ? `${selectedMember.firstName} ${selectedMember.lastName} (${selectedMember.dni})` : "Seleccionar socio..."}
+              </SelectValue>
             </SelectTrigger>
             <SelectContent>
               {members.map((m) => (
@@ -90,9 +97,17 @@ export default function MemberFeesManager() {
                 !selectedMemberId
                   ? "Primero selecciona un socio"
                   : availableFees.length === 0
-                  ? "No hay aranceles disponibles"
+                  ? "No hay aranceles para su categoría"
                   : "Seleccionar arancel..."
-              } />
+              }>
+                {selectedFee
+                  ? `${selectedFee.name} - $${Number(selectedFee.amount).toFixed(2)}`
+                  : !selectedMemberId
+                  ? "Primero selecciona un socio"
+                  : availableFees.length === 0
+                  ? "No hay aranceles para su categoría"
+                  : "Seleccionar arancel..."}
+              </SelectValue>
             </SelectTrigger>
             <SelectContent>
               {availableFees.map((fee) => (
@@ -147,7 +162,14 @@ export default function MemberFeesManager() {
                   <TableBody>
                     {memberFees.map((mf) => (
                       <TableRow key={mf.id}>
-                        <TableCell className="font-medium">{mf.fee.name}</TableCell>
+                        <TableCell className="font-medium">
+                          {mf.fee.name}
+                          {mf.fee.discipline && (
+                            <span className="text-muted-foreground text-xs block">
+                              {mf.fee.discipline.name}
+                            </span>
+                          )}
+                        </TableCell>
                         <TableCell>${Number(mf.fee.amount).toFixed(2)}</TableCell>
                         <TableCell>
                           <Badge variant={mf.paid ? "secondary" : "destructive"}>

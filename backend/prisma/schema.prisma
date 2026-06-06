@@ -40,18 +40,19 @@ model Salary {
 }
 
 model Member {
-  id              Int      @id @default(autoincrement())
-  firstName       String
-  lastName        String
-  dni             String   @unique
-  birthDate       DateTime
-  contact         String?
-  socialFeePaid   Boolean  @default(false)
-  accumulatedDebt Decimal  @default(0)
+  id        Int      @id @default(autoincrement())
+  firstName String
+  lastName  String
+  dni       String   @unique
+  birthDate DateTime
+  email     String?
+  phone     String?
+  isActive  Boolean  @default(true)
 
-  memberGroups MemberGroup[]
-  attendances  Attendance[]
-  memberFees   MemberFee[]
+  memberGroups     MemberGroup[]
+  attendances      Attendance[]
+  memberFees       MemberFee[]
+  memberSocialFees MemberSocialFee[]
 }
 
 model Discipline {
@@ -59,6 +60,7 @@ model Discipline {
   name String @unique
 
   groupClasses GroupClass[]
+  sportsFees   SportsFee[]
 }
 
 model GroupClass {
@@ -135,14 +137,44 @@ model MaintenanceLog {
 }
 
 model SportsFee {
-  id          Int      @id @default(autoincrement())
-  name        String
-  amount      Decimal
-  description String?
-  active      Boolean  @default(true)
-  createdAt   DateTime @default(now())
+  id           Int        @id @default(autoincrement())
+  name         String
+  amount       Decimal
+  category     String     // Infantil | Juvenil | Adulto | Senior
+  description  String?
+  active       Boolean    @default(true)
+  disciplineId Int
+  discipline   Discipline @relation(fields: [disciplineId], references: [id], onDelete: Cascade)
+  createdAt    DateTime   @default(now())
 
   memberFees MemberFee[]
+}
+
+model SocialFee {
+  id        Int      @id @default(autoincrement())
+  category  String   @unique // Infantil | Juvenil | Adulto | Senior
+  amount    Decimal
+  dueDay    Int      @default(10)
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  memberSocialFees MemberSocialFee[]
+}
+
+model MemberSocialFee {
+  id          Int       @id @default(autoincrement())
+  memberId    Int
+  member      Member    @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  socialFeeId Int
+  socialFee   SocialFee @relation(fields: [socialFeeId], references: [id])
+  periodMonth Int
+  periodYear  Int
+  amount      Decimal
+  paid        Boolean   @default(false)
+  paidAt      DateTime?
+  createdAt   DateTime  @default(now())
+
+  @@unique([memberId, periodMonth, periodYear])
 }
 
 model MemberFee {
