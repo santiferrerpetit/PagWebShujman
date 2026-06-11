@@ -23,7 +23,7 @@ Este es el motor económico del club y el corazón administrativo de la propuest
 
 Módulo específico para el uso diario de los entrenadores.
 
-- **Hito 3.1: Gestión de Disciplinas y Horarios:** Creación de grupos por deporte (Fútbol, Básquet, Vóley, etc.).
+- **Hito 3.1: Gestión de Disciplinas y Horarios:** Creación de grupos por deporte (Fútbol, Básquet, Vóley, etc.), asignación de socios a grupos y vista de grupos para profesores. -- Hecho --
     
 - **Hito 3.2: Toma de Asistencia Digital:** Interfaz ágil para que los profesores marquen el presente desde un dispositivo móvil durante la práctica.
     

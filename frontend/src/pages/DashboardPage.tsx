@@ -30,8 +30,8 @@ const modules = [
     title: "Disciplinas",
     description: "Crea grupos por deporte y gestiona horarios de práctica.",
     icon: Clock,
-    to: "#",
-    available: false,
+    to: "/disciplines",
+    available: true,
   },
   {
     title: "Inventario",

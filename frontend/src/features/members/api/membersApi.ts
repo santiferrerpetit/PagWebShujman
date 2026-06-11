@@ -1,22 +1,30 @@
 /**
- * @fileoverview API de socios - CRUD completo.
- * Incluye tipos de datos y función auxiliar parseMember para normalizar la deuda acumulada.
+ * @fileoverview API de socios - CRUD completo + toggle activo/inactivo.
  */
 
 import { apiFetch } from "@/lib/api";
 
-/**
- * Datos completos de un socio del club.
- */
+export type MemberSocialFeeItem = {
+  id: number;
+  periodMonth: number;
+  periodYear: number;
+  amount: number;
+  paid: boolean;
+  socialFee: { category: string };
+};
+
 export type Member = {
   id: number;
   firstName: string;
   lastName: string;
   dni: string;
   birthDate: string;
-  contact: string | null;
-  socialFeePaid: boolean;
+  email: string | null;
+  phone: string | null;
+  isActive: boolean;
+  category?: string;
   accumulatedDebt: number;
+  memberSocialFees?: MemberSocialFeeItem[];
   createdAt?: string;
   updatedAt?: string;
 };
@@ -27,55 +35,32 @@ export type CreateMemberInput = {
   lastName: string;
   dni: string;
   birthDate: string;
-  contact?: string;
-  socialFeePaid?: boolean;
-  accumulatedDebt?: number;
+  email?: string;
+  phone?: string;
+  isActive?: boolean;
 };
 
 /** Datos para actualizar un socio (todos opcionales) */
 export type UpdateMemberInput = Partial<CreateMemberInput>;
 
-/**
- * Normaliza los datos de un socio desde la API.
- * Convierte accumulatedDebt a número para evitar problemas de tipo.
- *
- * @param {any} data - Datos crudos de la API
- * @returns {Member} Socio con accumulatedDebt normalizado a number
- */
 function parseMember(data: any): Member {
   return {
     ...data,
     accumulatedDebt: Number(data.accumulatedDebt) || 0,
+    isActive: data.isActive ?? true,
   };
 }
 
-/**
- * Obtiene la lista completa de socios.
- *
- * @returns {Promise<Member[]>} Lista de socios
- */
 export async function getMembers(): Promise<Member[]> {
   const members = await apiFetch<any[]>("/api/members");
   return members.map(parseMember);
 }
 
-/**
- * Obtiene un socio por su ID.
- *
- * @param {number} id - ID del socio
- * @returns {Promise<Member>} Datos del socio
- */
 export async function getMember(id: number): Promise<Member> {
   const member = await apiFetch<any>(`/api/members/${id}`);
   return parseMember(member);
 }
 
-/**
- * Crea un nuevo socio.
- *
- * @param {CreateMemberInput} data - Datos del nuevo socio
- * @returns {Promise<Member>} Socio creado
- */
 export async function createMember(data: CreateMemberInput): Promise<Member> {
   const member = await apiFetch<any>("/api/members", {
     method: "POST",
@@ -84,13 +69,6 @@ export async function createMember(data: CreateMemberInput): Promise<Member> {
   return parseMember(member);
 }
 
-/**
- * Actualiza los datos de un socio existente.
- *
- * @param {number} id - ID del socio a modificar
- * @param {UpdateMemberInput} data - Campos a actualizar
- * @returns {Promise<Member>} Socio actualizado
- */
 export async function updateMember(id: number, data: UpdateMemberInput): Promise<Member> {
   const member = await apiFetch<any>(`/api/members/${id}`, {
     method: "PUT",
@@ -99,14 +77,11 @@ export async function updateMember(id: number, data: UpdateMemberInput): Promise
   return parseMember(member);
 }
 
-/**
- * Elimina un socio del sistema.
- *
- * @param {number} id - ID del socio a eliminar
- * @returns {Promise<void>}
- */
 export async function deleteMember(id: number): Promise<void> {
-  return apiFetch(`/api/members/${id}`, {
-    method: "DELETE",
-  });
+  return apiFetch(`/api/members/${id}`, { method: "DELETE" });
+}
+
+export async function toggleMemberActive(id: number): Promise<Member> {
+  const member = await apiFetch<any>(`/api/members/${id}/toggle-active`, { method: "POST" });
+  return parseMember(member);
 }

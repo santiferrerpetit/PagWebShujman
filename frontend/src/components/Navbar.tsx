@@ -30,7 +30,7 @@ export default function Navbar() {
     <nav className="border-b bg-card/50 backdrop-blur sticky top-0 z-50">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-14">
-          <Link to="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+          <Link to={user ? "/dashboard" : "/"} className="flex items-center gap-2 hover:opacity-80 transition-opacity">
             <Building2 className="size-5 text-primary" />
             <span className="text-sm font-semibold tracking-tight">Gestión de Clubes</span>
           </Link>
@@ -69,6 +69,11 @@ export default function Navbar() {
                 <li>
                   <Link to="/fees" className={`${navLinkBase} ${isActive("/fees") ? navLinkActive : navLinkInactive}`}>
                     Aranceles
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/disciplines" className={`${navLinkBase} ${isActive("/disciplines") ? navLinkActive : navLinkInactive}`}>
+                    Disciplinas
                   </Link>
                 </li>
                 <li className="ml-2">

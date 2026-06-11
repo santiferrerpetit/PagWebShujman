@@ -5,6 +5,7 @@ import {
   createMember,
   updateMember,
   deleteMember,
+  toggleMemberActive,
 } from "./members.service";
 import { asyncHandler } from "../../middleware/asyncHandler";
 
@@ -38,4 +39,10 @@ export const remove = asyncHandler(async (req: Request, res: Response) => {
   const id = Number(req.params.id);
   await deleteMember(id);
   res.status(204).send();
+});
+
+export const toggleActive = asyncHandler(async (req: Request, res: Response) => {
+  const id = Number(req.params.id);
+  const member = await toggleMemberActive(id);
+  res.json(member);
 });
