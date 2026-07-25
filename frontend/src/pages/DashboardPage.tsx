@@ -12,7 +12,6 @@ import {
   CheckSquare,
 } from "lucide-react";
 
-
 const modules = [
   {
     title: "Socios",
@@ -58,7 +57,6 @@ const modules = [
   },
 ];
 
-
 const container = {
   hidden: { opacity: 0 },
   show: {
@@ -92,17 +90,9 @@ export default function DashboardPage() {
         animate="show"
         className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5"
       >
-        {modules
-          .filter((mod) => {
-            if (user?.role?.name === "Professor") {
-              return mod.to === "/attendance" || mod.title === "Inventario" || mod.title === "Mantenimiento";
-            }
-            return true;
-          })
-          .map((mod) => {
-            const Icon = mod.icon;
-            const content = (
-
+        {modules.map((mod) => {
+          const Icon = mod.icon;
+          const content = (
             <Card className="h-full hover:border-primary/30 transition-colors">
               <CardHeader className="pb-2">
                 <div className="flex items-start justify-between">

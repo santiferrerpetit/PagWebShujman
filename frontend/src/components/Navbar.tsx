@@ -98,7 +98,6 @@ export default function Navbar() {
                   </DropdownMenu>
                 </li>
               </>
-
             )}
           </ul>
         </div>
