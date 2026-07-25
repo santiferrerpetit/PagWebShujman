@@ -1,0 +1,69 @@
+name: Desplegar Backend
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - "backend/**"
+      - ".github/workflows/deploy-backend.yml"
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout del código
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Instalar dependencias
+        working-directory: backend
+        run: npm ci
+
+      - name: Compilar el backend
+        working-directory: backend
+        run: npm run build
+
+      - name: Instalar sshpass
+        run: sudo apt-get update && sudo apt-get install -y sshpass
+
+      - name: Desplegar dist/ al servidor con rsync
+        env:
+          SERVER_PASSWORD: ${{ secrets.SERVER_PASSWORD }}
+          SERVER_USER: ${{ secrets.SERVER_USER }}
+          SERVER_HOST: ${{ secrets.SERVER_HOST }}
+        run: |
+          SSH_OPTS="-p 22002 -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
+
+          # dist/ y prisma/ son contenido generado/versionado: seguro pisarlos enteros.
+          # NO se toca .env, dev.db ni node_modules del servidor (estado de producción).
+          sshpass -p "$SERVER_PASSWORD" rsync -avz --delete -e "ssh $SSH_OPTS" \
+            backend/dist/ "$SERVER_USER@$SERVER_HOST:~/servicios/dist/"
+
+          sshpass -p "$SERVER_PASSWORD" rsync -avz --delete -e "ssh $SSH_OPTS" \
+            backend/prisma/ "$SERVER_USER@$SERVER_HOST:~/servicios/prisma/"
+
+          sshpass -p "$SERVER_PASSWORD" rsync -avz -e "ssh $SSH_OPTS" \
+            backend/package.json backend/package-lock.json backend/prisma.config.ts \
+            "$SERVER_USER@$SERVER_HOST:~/servicios/"
+
+      - name: Instalar dependencias en el servidor y reiniciar pm2
+        env:
+          SERVER_PASSWORD: ${{ secrets.SERVER_PASSWORD }}
+          SERVER_USER: ${{ secrets.SERVER_USER }}
+          SERVER_HOST: ${{ secrets.SERVER_HOST }}
+        run: |
+          sshpass -p "$SERVER_PASSWORD" ssh -p 22002 -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
+            "$SERVER_USER@$SERVER_HOST" \
+            "cd ~/servicios && npm ci && npx prisma generate && pm2 restart servicios"
+
+      - name: Confirmar despliegue
+        run: |
+          echo "Despliegue de backend completado."
+          echo "Recordá: las migraciones de Prisma se aplican a mano (npx prisma migrate deploy en el servidor) si el schema cambió."
