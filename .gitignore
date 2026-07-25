@@ -53,6 +53,9 @@ deploy_key*
 *.so
 *.dll
 
+# docs sueltos
+*.pdf
+
 # agent / internal docs
 .opencode/
 .opencoe/
