@@ -5,8 +5,9 @@
  */
 
 /** URL base del servidor backend. Detecta automáticamente si está en local o en producción. */
-export const API_BASE =
-  window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"
+export const API_BASE = window.location.pathname.startsWith("/~")
+  ? `/${window.location.pathname.split("/")[1]}`
+  : window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"
     ? "http://localhost:3001"
     : `http://${window.location.hostname}:3001`;
 
