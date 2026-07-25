@@ -61,16 +61,32 @@ export default function Navbar() {
                     Panel
                   </Link>
                 </li>
-                <li>
-                  <Link to="/members" className={`${navLinkBase} ${isActive("/members") ? navLinkActive : navLinkInactive}`}>
-                    Socios
-                  </Link>
-                </li>
-                <li>
-                  <Link to="/fees" className={`${navLinkBase} ${isActive("/fees") ? navLinkActive : navLinkInactive}`}>
-                    Aranceles
-                  </Link>
-                </li>
+                {user.role?.name === "Administrator" && (
+                  <>
+                    <li>
+                      <Link to="/members" className={`${navLinkBase} ${isActive("/members") ? navLinkActive : navLinkInactive}`}>
+                        Socios
+                      </Link>
+                    </li>
+                    <li>
+                      <Link to="/fees" className={`${navLinkBase} ${isActive("/fees") ? navLinkActive : navLinkInactive}`}>
+                        Aranceles
+                      </Link>
+                    </li>
+                    <li>
+                      <Link to="/disciplines" className={`${navLinkBase} ${isActive("/disciplines") ? navLinkActive : navLinkInactive}`}>
+                        Disciplinas
+                      </Link>
+                    </li>
+                  </>
+                )}
+                {(user.role?.name === "Administrator" || user.role?.name === "Professor") && (
+                  <li>
+                    <Link to="/attendance" className={`${navLinkBase} ${isActive("/attendance") ? navLinkActive : navLinkInactive}`}>
+                      Asistencias
+                    </Link>
+                  </li>
+                )}
                 <li className="ml-2">
                   <DropdownMenu>
                     <DropdownMenuTrigger render={<Button variant="ghost" size="sm" className="gap-1" />}>
@@ -86,6 +102,7 @@ export default function Navbar() {
                   </DropdownMenu>
                 </li>
               </>
+
             )}
           </ul>
         </div>

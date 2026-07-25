@@ -4,6 +4,9 @@ import cors from "cors";
 import authRoutes from "./modules/auth/auth.routes";
 import membersRoutes from "./modules/members/members.routes";
 import feesRoutes from "./modules/fees/fees.routes";
+import disciplinesRoutes from "./modules/disciplines/disciplines.routes";
+import classesRoutes from "./modules/classes/classes.routes";
+import attendanceRoutes from "./modules/attendance/attendance.routes";
 import { errorHandler } from "./middleware/errorHandler";
 
 const app = express();
@@ -16,6 +19,9 @@ app.use(express.json());
 app.use("/api/auth", authRoutes);
 app.use("/api/members", membersRoutes);
 app.use("/api/fees", feesRoutes);
+app.use("/api/disciplines", disciplinesRoutes);
+app.use("/api/classes", classesRoutes);
+app.use("/api/attendance", attendanceRoutes);
 app.get("/api/health", (_req, res) => {
   res.json({ status: "ok", timestamp: new Date().toISOString() });
 });
@@ -25,6 +31,9 @@ app.get("/api/health", (_req, res) => {
 app.use("/auth", authRoutes);
 app.use("/members", membersRoutes);
 app.use("/fees", feesRoutes);
+app.use("/disciplines", disciplinesRoutes);
+app.use("/classes", classesRoutes);
+app.use("/attendance", attendanceRoutes);
 app.get("/health", (_req, res) => {
   res.json({ status: "ok", timestamp: new Date().toISOString() });
 });
@@ -41,3 +50,4 @@ const PORT = Number(process.env.PORT) || 3001;
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`API corriendo en puerto ${PORT}`);
 });
+

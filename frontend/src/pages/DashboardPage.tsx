@@ -9,7 +9,9 @@ import {
   Clock,
   Package,
   Wrench,
+  CheckSquare,
 } from "lucide-react";
+
 
 const modules = [
   {
@@ -30,8 +32,15 @@ const modules = [
     title: "Disciplinas",
     description: "Crea grupos por deporte y gestiona horarios de práctica.",
     icon: Clock,
-    to: "#",
-    available: false,
+    to: "/disciplines",
+    available: true,
+  },
+  {
+    title: "Asistencias",
+    description: "Toma asistencia diaria a los alumnos y consulta estadísticas.",
+    icon: CheckSquare,
+    to: "/attendance",
+    available: true,
   },
   {
     title: "Inventario",
@@ -48,6 +57,7 @@ const modules = [
     available: false,
   },
 ];
+
 
 const container = {
   hidden: { opacity: 0 },
@@ -82,9 +92,17 @@ export default function DashboardPage() {
         animate="show"
         className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5"
       >
-        {modules.map((mod) => {
-          const Icon = mod.icon;
-          const content = (
+        {modules
+          .filter((mod) => {
+            if (user?.role?.name === "Professor") {
+              return mod.to === "/attendance" || mod.title === "Inventario" || mod.title === "Mantenimiento";
+            }
+            return true;
+          })
+          .map((mod) => {
+            const Icon = mod.icon;
+            const content = (
+
             <Card className="h-full hover:border-primary/30 transition-colors">
               <CardHeader className="pb-2">
                 <div className="flex items-start justify-between">

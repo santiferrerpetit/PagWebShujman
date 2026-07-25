@@ -105,3 +105,21 @@ export async function getUserById(id: number) {
   });
   return user;
 }
+
+export async function getUsers() {
+  return prisma.user.findMany({
+    select: {
+      id: true,
+      username: true,
+      email: true,
+      firstName: true,
+      lastName: true,
+      roleId: true,
+      role: { select: { id: true, name: true } },
+    },
+    orderBy: {
+      firstName: "asc",
+    },
+  });
+}
+
