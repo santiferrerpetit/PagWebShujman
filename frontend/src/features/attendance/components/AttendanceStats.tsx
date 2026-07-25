@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useAttendance } from "../hooks/useAttendance";
-import { Loader2, TrendingUp, Users, Calendar, Percent } from "lucide-react";
+import { Loader2, TrendingUp, Users, Calendar } from "lucide-react";
 
 export default function AttendanceStats() {
   const { stats, isLoadingStats, statsError, fetchStats } = useAttendance();

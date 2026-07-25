@@ -11,17 +11,28 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Pencil, Trash2, UsersRound } from "lucide-react";
+import { Power, PowerOff, UsersRound } from "lucide-react";
 
 type MemberListProps = {
   members: Member[];
   isLoading: boolean;
   error: string | null;
-  onEdit: (member: Member) => void;
-  onDelete: (id: number) => void;
+  onToggleActive: (id: number) => void;
 };
 
-export default function MemberList({ members, isLoading, error, onEdit, onDelete }: MemberListProps) {
+function getCurrentMonthSocialFeeStatus(member: Member): { text: string; variant: "secondary" | "destructive" | "outline" } {
+  const now = new Date();
+  const currentMonth = now.getMonth() + 1;
+  const currentYear = now.getFullYear();
+  const current = member.memberSocialFees?.find(
+    (msf) => msf.periodMonth === currentMonth && msf.periodYear === currentYear
+  );
+  if (!current) return { text: "Sin cuota", variant: "outline" };
+  if (current.paid) return { text: "Pagada", variant: "secondary" };
+  return { text: "Pendiente", variant: "destructive" };
+}
+
+export default function MemberList({ members, isLoading, error, onToggleActive }: MemberListProps) {
   if (isLoading) {
     return (
       <div className="flex flex-col gap-3">
@@ -58,46 +69,67 @@ export default function MemberList({ members, isLoading, error, onEdit, onDelete
           <TableRow>
             <TableHead>Nombre</TableHead>
             <TableHead>DNI</TableHead>
-            <TableHead>Contacto</TableHead>
-            <TableHead>Cuota</TableHead>
-            <TableHead>Deuda</TableHead>
+            <TableHead>Email</TableHead>
+            <TableHead>Teléfono</TableHead>
+            <TableHead>Categoría</TableHead>
+            <TableHead>Estado</TableHead>
+            <TableHead>Cuota Social</TableHead>
+            <TableHead>Deuda Total</TableHead>
             <TableHead className="text-right">Acciones</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          {members.map((member) => (
-            <TableRow key={member.id}>
-              <TableCell className="font-medium">
-                {member.firstName} {member.lastName}
-              </TableCell>
-              <TableCell>{member.dni}</TableCell>
-              <TableCell>{member.contact || "—"}</TableCell>
-              <TableCell>
-                <Badge variant={member.socialFeePaid ? "secondary" : "destructive"}>
-                  {member.socialFeePaid ? "Pagada" : "Pendiente"}
-                </Badge>
-              </TableCell>
-              <TableCell>
-                {Number(member.accumulatedDebt) === 0 ? (
-                  <Badge variant="secondary">Al día</Badge>
-                ) : (
-                  <span className="text-sm text-muted-foreground">${Number(member.accumulatedDebt).toFixed(2)}</span>
-                )}
-              </TableCell>
-              <TableCell className="text-right">
-                <div className="flex items-center justify-end gap-2">
-                  <Button variant="ghost" size="sm" onClick={() => onEdit(member)}>
-                    <Pencil data-icon="inline-start" />
-                    Editar
+          {members.map((member) => {
+            const socialStatus = getCurrentMonthSocialFeeStatus(member);
+            return (
+              <TableRow key={member.id} data-inactive={!member.isActive ? "" : undefined}>
+                <TableCell className="font-medium">
+                  {member.firstName} {member.lastName}
+                </TableCell>
+                <TableCell>{member.dni}</TableCell>
+                <TableCell>{member.email || "—"}</TableCell>
+                <TableCell>{member.phone || "—"}</TableCell>
+                <TableCell>
+                  <Badge variant="outline">{member.category || "—"}</Badge>
+                </TableCell>
+                <TableCell>
+                  <Badge variant={member.isActive ? "secondary" : "outline"}>
+                    {member.isActive ? "Activo" : "Inactivo"}
+                  </Badge>
+                </TableCell>
+                <TableCell>
+                  <Badge variant={socialStatus.variant}>{socialStatus.text}</Badge>
+                </TableCell>
+                <TableCell>
+                  {Number(member.accumulatedDebt) === 0 ? (
+                    <Badge variant="secondary">Al día</Badge>
+                  ) : (
+                    <span className="text-sm text-muted-foreground">${Number(member.accumulatedDebt).toFixed(2)}</span>
+                  )}
+                </TableCell>
+                <TableCell className="text-right">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => onToggleActive(member.id)}
+                    className={member.isActive ? "text-destructive hover:text-destructive" : "text-emerald-600 hover:text-emerald-600"}
+                  >
+                    {member.isActive ? (
+                      <>
+                        <PowerOff data-icon="inline-start" />
+                        Desactivar
+                      </>
+                    ) : (
+                      <>
+                        <Power data-icon="inline-start" />
+                        Activar
+                      </>
+                    )}
                   </Button>
-                  <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive" onClick={() => onDelete(member.id)}>
-                    <Trash2 data-icon="inline-start" />
-                    Eliminar
-                  </Button>
-                </div>
-              </TableCell>
-            </TableRow>
-          ))}
+                </TableCell>
+              </TableRow>
+            );
+          })}
         </TableBody>
       </Table>
     </div>

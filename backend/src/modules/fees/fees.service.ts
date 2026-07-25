@@ -1,10 +1,12 @@
 import prisma from "../../lib/prisma";
 import { AppError } from "../../lib/AppError";
+import { getCategoryFromBirthDate } from "../../lib/category";
 import type { CreateFeeInput, UpdateFeeInput, AssignFeeInput, ToggleFeePaidInput } from "./fees.schema";
 
 export async function getAllFees() {
   return prisma.sportsFee.findMany({
     where: { active: true },
+    include: { discipline: { select: { id: true, name: true } } },
     orderBy: { name: "asc" },
   });
 }
@@ -13,6 +15,7 @@ export async function getFeeById(id: number) {
   return prisma.sportsFee.findUnique({
     where: { id },
     include: {
+      discipline: { select: { id: true, name: true } },
       memberFees: {
         include: {
           member: {
@@ -29,9 +32,12 @@ export async function createFee(data: CreateFeeInput) {
     data: {
       name: data.name,
       amount: data.amount,
+      category: data.category,
+      disciplineId: data.disciplineId,
       description: data.description,
       active: data.active ?? true,
     },
+    include: { discipline: { select: { id: true, name: true } } },
   });
 }
 
@@ -41,9 +47,12 @@ export async function updateFee(id: number, data: UpdateFeeInput) {
     data: {
       name: data.name,
       amount: data.amount,
+      category: data.category,
+      disciplineId: data.disciplineId,
       description: data.description,
       active: data.active,
     },
+    include: { discipline: { select: { id: true, name: true } } },
   });
 }
 
@@ -52,6 +61,32 @@ export async function deleteFee(id: number) {
 }
 
 export async function assignFeeToMember(data: AssignFeeInput) {
+  const member = await prisma.member.findUnique({
+    where: { id: data.memberId },
+  });
+  if (!member) {
+    throw new AppError("Socio no encontrado", "MEMBER_NOT_FOUND", 404);
+  }
+  if (!member.isActive) {
+    throw new AppError("No se pueden asignar aranceles a socios inactivos", "MEMBER_INACTIVE", 400);
+  }
+
+  const fee = await prisma.sportsFee.findUnique({
+    where: { id: data.feeId },
+  });
+  if (!fee) {
+    throw new AppError("Arancel no encontrado", "FEE_NOT_FOUND", 404);
+  }
+
+  const memberCategory = getCategoryFromBirthDate(member.birthDate);
+  if (fee.category !== memberCategory) {
+    throw new AppError(
+      `Este arancel es para categoría "${fee.category}" pero el socio es "${memberCategory}"`,
+      "CATEGORY_MISMATCH",
+      400
+    );
+  }
+
   const existing = await prisma.memberFee.findUnique({
     where: { memberId_feeId: { memberId: data.memberId, feeId: data.feeId } },
   });
@@ -67,7 +102,7 @@ export async function assignFeeToMember(data: AssignFeeInput) {
       paidAt: data.paid ? new Date() : null,
     },
     include: {
-      fee: true,
+      fee: { include: { discipline: { select: { id: true, name: true } } } },
       member: { select: { id: true, firstName: true, lastName: true } },
     },
   });
@@ -88,7 +123,7 @@ export async function toggleFeePaid(data: ToggleFeePaidInput) {
       paidAt: data.paid ? new Date() : null,
     },
     include: {
-      fee: true,
+      fee: { include: { discipline: { select: { id: true, name: true } } } },
       member: { select: { id: true, firstName: true, lastName: true } },
     },
   });
@@ -108,7 +143,7 @@ export async function removeFeeFromMember(memberId: number, feeId: number) {
 export async function getMemberFees(memberId: number) {
   return prisma.memberFee.findMany({
     where: { memberId },
-    include: { fee: true },
+    include: { fee: { include: { discipline: { select: { id: true, name: true } } } } },
     orderBy: { createdAt: "desc" },
   });
 }
@@ -116,7 +151,7 @@ export async function getMemberFees(memberId: number) {
 export async function getAllMemberFees() {
   return prisma.memberFee.findMany({
     include: {
-      fee: true,
+      fee: { include: { discipline: { select: { id: true, name: true } } } },
       member: { select: { id: true, firstName: true, lastName: true, dni: true } },
     },
     orderBy: { createdAt: "desc" },

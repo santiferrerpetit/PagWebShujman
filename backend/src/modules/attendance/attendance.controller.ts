@@ -1,6 +1,6 @@
 import type { Request, Response } from "express";
 import { asyncHandler } from "../../middleware/asyncHandler";
-import { getClassDetails } from "../classes/classes.service";
+import { getGroupById } from "../disciplines/disciplines.service";
 import {
   getAttendanceList,
   saveAttendance,
@@ -19,8 +19,8 @@ export const listAttendance = asyncHandler(async (req: Request, res: Response) =
   // Security check: if the user is a Professor, they must teach this class
   const loggedUser = (req as any).user;
   if (loggedUser?.roleName === "Professor") {
-    const classDetails = await getClassDetails(groupClassId);
-    if (classDetails.userId !== Number(loggedUser.id)) {
+    const groupDetails = await getGroupById(groupClassId);
+    if (groupDetails?.userId !== Number(loggedUser.id)) {
       res.status(403).json({ message: "Acceso denegado. No enseñas esta clase." });
       return;
     }
@@ -36,8 +36,8 @@ export const save = asyncHandler(async (req: Request, res: Response) => {
   // Security check: if the user is a Professor, they must teach this class
   const loggedUser = (req as any).user;
   if (loggedUser?.roleName === "Professor") {
-    const classDetails = await getClassDetails(groupClassId);
-    if (classDetails.userId !== Number(loggedUser.id)) {
+    const groupDetails = await getGroupById(groupClassId);
+    if (groupDetails?.userId !== Number(loggedUser.id)) {
       res.status(403).json({ message: "Acceso denegado. No puedes registrar asistencia en una clase que no enseñas." });
       return;
     }

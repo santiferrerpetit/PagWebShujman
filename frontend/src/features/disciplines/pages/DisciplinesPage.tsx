@@ -1,442 +1,241 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { useDisciplines } from "../hooks/useDisciplines";
-import { useMembers } from "@/features/members/hooks/useMembers";
-import { getUsersApi, type User } from "@/features/auth/api/authApi";
-import DisciplineForm from "../components/DisciplineForm";
-import ClassForm from "../components/ClassForm";
-import ClassEnrollmentManager from "../components/ClassEnrollmentManager";
+import { Link } from "react-router-dom";
+import { useDisciplines, useTeachers } from "@/features/disciplines/hooks/useDisciplines";
+import DisciplineList from "@/features/disciplines/components/DisciplineList";
+import DisciplineForm from "@/features/disciplines/components/DisciplineForm";
+import { setupDiscipline } from "@/features/disciplines/api/disciplinesApi";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Plus, Edit2, Trash2, Users, Calendar, Clock as ClockIcon, BookOpen } from "lucide-react";
-import type { Discipline, GroupClass, CreateDisciplineInput, CreateClassInput } from "../api/disciplinesApi";
+import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Plus, Users, Clock, ArrowRight, Dumbbell, Loader2 } from "lucide-react";
+import type { Discipline } from "@/features/disciplines/api/disciplinesApi";
+
+function getTotalMembers(discipline: Discipline): number {
+  return discipline.groupClasses.reduce((sum, g) => sum + (g._count?.memberGroups ?? 0), 0);
+}
 
 export default function DisciplinesPage() {
-  const {
-    disciplines,
-    isLoading: isLoadingDiscs,
-    error: discsError,
-    addDiscipline,
-    editDiscipline,
-    removeDiscipline,
-    classes,
-    isLoadingClasses,
-    classesError,
-    addClass,
-    editClass,
-    removeClass,
-    enroll,
-    unenroll,
-  } = useDisciplines();
-
-  const { members } = useMembers();
-
-  // State for professors
-  const [professors, setProfessors] = useState<User[]>([]);
-  const [isLoadingProfs, setIsLoadingProfs] = useState(false);
-
-  // UI state
-  const [activeTab, setActiveTab] = useState<"classes" | "disciplines">("classes");
-  const [showDiscForm, setShowDiscForm] = useState(false);
-  const [editingDisc, setEditingDisc] = useState<Discipline | null>(null);
-  
-  const [showClassForm, setShowClassForm] = useState(false);
-  const [editingClass, setEditingClass] = useState<GroupClass | null>(null);
-  const [activeClassForEnrollment, setActiveClassForEnrollment] = useState<GroupClass | null>(null);
-
+  const { disciplines, isLoading, error, editDiscipline, removeDiscipline, fetchDisciplines } = useDisciplines();
+  const { teachers } = useTeachers();
+  const [showForm, setShowForm] = useState(false);
+  const [editingDiscipline, setEditingDiscipline] = useState<Discipline | null>(null);
+  const [editName, setEditName] = useState("");
   const [formError, setFormError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  useEffect(() => {
-    async function loadProfessors() {
-      setIsLoadingProfs(true);
-      try {
-        const users = await getUsersApi();
-        // Filter users that have role "Professor" or "Administrator"
-        const filtered = users.filter((u) => u.role.name === "Professor" || u.role.name === "Administrator");
-        setProfessors(filtered);
-      } catch (err) {
-        console.error("Error loading professors", err);
-      } finally {
-        setIsLoadingProfs(false);
-      }
-    }
-    loadProfessors();
-  }, []);
-
-  // Sync the active class detail if the classes array changes (after enroll/unenroll)
-  useEffect(() => {
-    if (activeClassForEnrollment) {
-      const updated = classes.find((c) => c.id === activeClassForEnrollment.id);
-      if (updated) {
-        setActiveClassForEnrollment(updated);
-      }
-    }
-  }, [classes, activeClassForEnrollment]);
-
-  // --- Discipline Actions ---
-  const handleDiscSubmit = async (data: CreateDisciplineInput) => {
+  const handleSetup = async (data: {
+    name: string;
+    category: string;
+    schedule: string;
+    days: string;
+    userId: number;
+    amount: number;
+  }) => {
     setIsSubmitting(true);
     setFormError(null);
-    let result;
-    if (editingDisc) {
-      result = await editDiscipline(editingDisc.id, data);
-    } else {
-      result = await addDiscipline(data);
-    }
-    setIsSubmitting(false);
-    if (result) {
-      setShowDiscForm(false);
-      setEditingDisc(null);
-    } else {
-      setFormError(discsError || "Error al procesar disciplina");
+    try {
+      await setupDiscipline(data);
+      await fetchDisciplines();
+      setShowForm(false);
+    } catch (err: any) {
+      setFormError(err.message || "Error al crear disciplina");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
-  const handleDiscDelete = async (id: number) => {
-    if (!confirm("¿Estás seguro de que querés eliminar esta disciplina?")) return;
+  const handleEdit = async () => {
+    if (!editingDiscipline || !editName.trim()) return;
+    setIsSubmitting(true);
+    setFormError(null);
+    const result = await editDiscipline(editingDiscipline.id, { name: editName.trim() });
+    setIsSubmitting(false);
+    if (result) {
+      setEditingDiscipline(null);
+      setShowForm(false);
+    } else {
+      setFormError(error || "Error al actualizar disciplina");
+    }
+  };
+
+  const handleDelete = async (id: number) => {
+    if (!confirm("¿Estás seguro de eliminar esta disciplina? Se eliminarán también sus grupos y aranceles.")) return;
     await removeDiscipline(id);
   };
 
-  // --- Class Actions ---
-  const handleClassSubmit = async (data: CreateClassInput) => {
-    setIsSubmitting(true);
+  const openCreate = () => {
+    setEditingDiscipline(null);
     setFormError(null);
-    let result;
-    if (editingClass) {
-      result = await editClass(editingClass.id, data);
-    } else {
-      result = await addClass(data);
-    }
-    setIsSubmitting(false);
-    if (result) {
-      setShowClassForm(false);
-      setEditingClass(null);
-    } else {
-      setFormError(classesError || "Error al procesar clase");
-    }
+    setShowForm(true);
   };
 
-  const handleClassDelete = async (id: number) => {
-    if (!confirm("¿Estás seguro de que querés eliminar esta clase?")) return;
-    await removeClass(id);
+  const openEdit = (discipline: Discipline) => {
+    setEditingDiscipline(discipline);
+    setEditName(discipline.name);
+    setFormError(null);
+    setShowForm(true);
+  };
+
+  const closeForm = () => {
+    setShowForm(false);
+    setEditingDiscipline(null);
+    setFormError(null);
   };
 
   return (
     <div className="flex-1 px-4 py-8 max-w-6xl mx-auto w-full">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+      <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-3xl font-light tracking-tight">Clases y Disciplinas</h1>
-          <p className="text-muted-foreground mt-1 text-sm">Gestiona deportes, horarios, profesores e inscripciones</p>
+          <h1 className="text-3xl font-light tracking-tight">Disciplinas</h1>
+          <p className="text-muted-foreground mt-1 text-sm">
+            Gestiona los deportes, grupos de práctica y aranceles del club
+          </p>
         </div>
-
-        {/* Tab Switcher */}
-        <div className="flex bg-muted rounded-lg p-1 self-start">
-          <button
-            onClick={() => {
-              setActiveTab("classes");
-              setActiveClassForEnrollment(null);
-            }}
-            className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all ${
-              activeTab === "classes"
-                ? "bg-background text-foreground shadow-sm"
-                : "text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            Clases Grupales
-          </button>
-          <button
-            onClick={() => {
-              setActiveTab("disciplines");
-              setActiveClassForEnrollment(null);
-            }}
-            className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all ${
-              activeTab === "disciplines"
-                ? "bg-background text-foreground shadow-sm"
-                : "text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            Deportes/Disciplinas
-          </button>
-        </div>
+        <Button onClick={openCreate} variant="outline">
+          <Plus data-icon="inline-start" />
+          Nueva Disciplina
+        </Button>
       </div>
 
-      {activeTab === "disciplines" && (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Form Area */}
-          <div className="lg:col-span-1">
+      <AnimatePresence>
+        {showForm && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.25 }}
+            className="overflow-hidden mb-8"
+          >
             <Card>
               <CardHeader>
                 <CardTitle className="text-base font-medium">
-                  {editingDisc ? "Editar Disciplina" : "Nueva Disciplina"}
+                  {editingDiscipline ? "Editar Disciplina" : "Nueva Disciplina"}
                 </CardTitle>
                 <CardDescription>
-                  {editingDisc ? `Modificando ${editingDisc.name}` : "Crea una nueva disciplina deportiva del club"}
+                  {editingDiscipline
+                    ? `Modificando: ${editingDiscipline.name}`
+                    : "Completá los datos de la disciplina, grupo y arancel"}
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <DisciplineForm
-                  key={editingDisc ? editingDisc.id : "new-disc"}
-                  discipline={editingDisc}
-                  onSubmit={handleDiscSubmit}
-                  onCancel={() => {
-                    setEditingDisc(null);
-                    setFormError(null);
-                  }}
-                  isLoading={isSubmitting}
-                  error={formError}
-                />
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* List Area */}
-          <div className="lg:col-span-2">
-            <Card>
-              <CardContent className="pt-6">
-                {isLoadingDiscs ? (
-                  <div className="text-center py-8 text-muted-foreground text-sm">Cargando disciplinas...</div>
-                ) : disciplines.length === 0 ? (
-                  <div className="text-center py-8 text-muted-foreground text-sm border border-dashed rounded-lg">
-                    No hay disciplinas registradas. Créalas en el panel de la izquierda.
+                {editingDiscipline ? (
+                  <div className="flex flex-col gap-4 max-w-md">
+                    <div className="flex flex-col gap-2">
+                      <Label htmlFor="edit-name">Nombre</Label>
+                      <Input
+                        id="edit-name"
+                        value={editName}
+                        onChange={(e) => setEditName(e.target.value)}
+                      />
+                    </div>
+                    {formError && (
+                      <Alert variant="destructive">
+                        <AlertDescription>{formError}</AlertDescription>
+                      </Alert>
+                    )}
+                    <div className="flex gap-3">
+                      <Button onClick={handleEdit} disabled={isSubmitting} className="flex-1">
+                        {isSubmitting && <Loader2 data-icon="inline-start" className="animate-spin" />}
+                        Guardar
+                      </Button>
+                      <Button variant="outline" onClick={closeForm} className="flex-1">Cancelar</Button>
+                    </div>
                   </div>
                 ) : (
-                  <div className="border rounded-md overflow-hidden bg-card">
-                    <table className="w-full text-sm">
-                      <thead className="bg-muted text-muted-foreground font-medium border-b text-left">
-                        <tr>
-                          <th className="p-3">Nombre</th>
-                          <th className="p-3 text-right">Acciones</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y">
-                        {disciplines.map((d) => (
-                          <tr key={d.id} className="hover:bg-muted/40 transition-colors">
-                            <td className="p-3 font-medium">{d.name}</td>
-                            <td className="p-3 text-right flex justify-end gap-2">
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => {
-                                  setEditingDisc(d);
-                                  setFormError(null);
-                                }}
-                              >
-                                <Edit2 className="size-4" />
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => handleDiscDelete(d.id)}
-                                className="text-destructive hover:bg-destructive/10 hover:text-destructive"
-                              >
-                                <Trash2 className="size-4" />
-                              </Button>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
+                  <DisciplineForm
+                    teachers={teachers}
+                    onSubmit={handleSetup}
+                    onCancel={closeForm}
+                    isLoading={isSubmitting}
+                    error={formError}
+                  />
                 )}
               </CardContent>
             </Card>
-          </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {isLoading ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <Skeleton className="h-40 w-full" />
+          <Skeleton className="h-40 w-full" />
+          <Skeleton className="h-40 w-full" />
         </div>
-      )}
-
-      {activeTab === "classes" && (
-        <div className="flex flex-col gap-6">
-          {/* Action button */}
-          {!showClassForm && !activeClassForEnrollment && (
-            <Button
-              onClick={() => {
-                setEditingClass(null);
-                setShowClassForm(true);
-                setFormError(null);
-              }}
-              variant="outline"
-              className="self-start"
-            >
-              <Plus className="size-4 mr-2" />
-              Nueva Clase Grupal
-            </Button>
-          )}
-
-          {/* Collapsible Forms */}
-          <AnimatePresence>
-            {showClassForm && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: "auto" }}
-                exit={{ opacity: 0, height: 0 }}
-                className="overflow-hidden"
+      ) : error ? (
+        <Alert variant="destructive">
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      ) : disciplines.length === 0 ? (
+        <div className="text-center py-12 text-muted-foreground">
+          <Dumbbell className="size-10 mx-auto mb-3 opacity-40" />
+          <p className="text-sm font-medium">No hay disciplinas registradas</p>
+          <p className="text-xs mt-1">Agregá una nueva disciplina para comenzar</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {disciplines.map((discipline) => {
+            const totalMembers = getTotalMembers(discipline);
+            const totalGroups = discipline.groupClasses.length;
+            const feesConfigured = discipline.sportsFees?.length ?? 0;
+            return (
+              <Link
+                key={discipline.id}
+                to={`/disciplines/${discipline.id}`}
+                className="group"
               >
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-base font-medium">
-                      {editingClass ? "Editar Clase Grupal" : "Nueva Clase Grupal"}
-                    </CardTitle>
-                    <CardDescription>
-                      Asigna un deporte, un profesor/entrenador, y define los días y horarios
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <ClassForm
-                      key={editingClass ? editingClass.id : "new-class"}
-                      groupClass={editingClass}
-                      disciplines={disciplines}
-                      professors={professors}
-                      onSubmit={handleClassSubmit}
-                      onCancel={() => {
-                        setShowClassForm(false);
-                        setEditingClass(null);
-                        setFormError(null);
-                      }}
-                      isLoading={isSubmitting}
-                      error={formError}
-                    />
-                  </CardContent>
-                </Card>
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Classes Grid */}
-            <div className={`${activeClassForEnrollment ? "lg:col-span-2" : "lg:col-span-3"} flex flex-col gap-4`}>
-              {isLoadingClasses || isLoadingProfs ? (
-                <div className="text-center py-12 text-muted-foreground text-sm bg-card border rounded-lg">
-                  Cargando clases y profesores...
-                </div>
-              ) : classes.length === 0 ? (
-                <div className="text-center py-12 text-muted-foreground text-sm border border-dashed rounded-lg bg-card">
-                  No hay clases grupales creadas. Crea una nueva para comenzar.
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {classes.map((c) => {
-                    const isSelected = activeClassForEnrollment?.id === c.id;
-                    return (
-                      <Card
-                        key={c.id}
-                        className={`hover:shadow-md transition-all flex flex-col ${
-                          isSelected ? "border-primary ring-1 ring-primary" : ""
-                        }`}
-                      >
-                        <CardHeader className="pb-3">
-                          <div className="flex justify-between items-start">
-                            <span className="text-xs bg-primary/10 text-primary px-2.5 py-0.5 rounded-full font-semibold">
-                              {c.discipline.name}
-                            </span>
-                            <div className="flex gap-1">
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setEditingClass(c);
-                                  setShowClassForm(true);
-                                  setFormError(null);
-                                }}
-                                className="h-7 w-7 p-0"
-                              >
-                                <Edit2 className="size-3.5" />
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleClassDelete(c.id);
-                                }}
-                                className="h-7 w-7 p-0 text-destructive hover:bg-destructive/10 hover:text-destructive"
-                              >
-                                <Trash2 className="size-3.5" />
-                              </Button>
-                            </div>
-                          </div>
-                          <CardTitle className="text-lg font-medium mt-3">
-                            Clase #{c.id} - {c.discipline.name}
-                          </CardTitle>
-                          <CardDescription className="text-xs">
-                            Prof: {c.user.firstName} {c.user.lastName}
-                          </CardDescription>
-                        </CardHeader>
-                        <CardContent className="pt-0 flex-1 flex flex-col justify-between">
-                          <div className="space-y-2 mt-2 text-sm text-muted-foreground">
-                            <div className="flex items-center gap-2">
-                              <Calendar className="size-4 text-muted-foreground/70" />
-                              <span>{c.days}</span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <ClockIcon className="size-4 text-muted-foreground/70" />
-                              <span>{c.schedule}</span>
-                            </div>
-                          </div>
-
-                          <div className="pt-4 mt-4 border-t flex items-center justify-between">
-                            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                              <Users className="size-4" />
-                              <span>{c._count?.memberGroups || 0} alumnos</span>
-                            </div>
-                            <Button
-                              variant={isSelected ? "default" : "outline"}
-                              size="sm"
-                              onClick={() => {
-                                setActiveClassForEnrollment(isSelected ? null : c);
-                                setShowClassForm(false);
-                              }}
-                            >
-                              Alumnos
-                            </Button>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-
-            {/* Sidebar Enrollment Manager */}
-            {activeClassForEnrollment && (
-              <div className="lg:col-span-1">
-                <Card className="sticky top-20 border-primary/45 shadow-lg">
-                  <CardHeader className="pb-3 border-b">
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <CardTitle className="text-base font-semibold">
-                          Alumnos Inscriptos
-                        </CardTitle>
-                        <CardDescription className="text-xs">
-                          {activeClassForEnrollment.discipline.name} ({activeClassForEnrollment.days} | {activeClassForEnrollment.schedule})
-                        </CardDescription>
-                      </div>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setActiveClassForEnrollment(null)}
-                        className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground"
-                      >
-                        ✕
-                      </Button>
+                <Card className="h-full transition-all hover:shadow-md hover:border-primary/20">
+                  <CardHeader className="pb-2">
+                    <div className="flex items-center justify-between">
+                      <CardTitle className="text-base font-medium group-hover:text-primary transition-colors">
+                        {discipline.name}
+                      </CardTitle>
+                      <ArrowRight className="size-4 text-muted-foreground group-hover:text-primary transition-colors" />
                     </div>
                   </CardHeader>
-                  <CardContent className="pt-4">
-                    <ClassEnrollmentManager
-                      groupClass={activeClassForEnrollment}
-                      members={members}
-                      onEnroll={enroll}
-                      onUnenroll={unenroll}
-                    />
+                  <CardContent className="space-y-3">
+                    <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                      <div className="flex items-center gap-1">
+                        <Users className="size-4" />
+                        <span>{totalMembers} socios</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Clock className="size-4" />
+                        <span>{totalGroups} grupos</span>
+                      </div>
+                    </div>
+                    <div className="flex flex-wrap gap-1.5">
+                      {discipline.sportsFees?.map((fee) => (
+                        <Badge key={fee.id} variant="outline" className="text-xs">
+                          {fee.category} ${Number(fee.amount).toFixed(0)}
+                        </Badge>
+                      ))}
+                      {feesConfigured === 0 && (
+                        <Badge variant="secondary" className="text-xs">Sin aranceles</Badge>
+                      )}
+                    </div>
                   </CardContent>
                 </Card>
-              </div>
-            )}
-          </div>
+              </Link>
+            );
+          })}
         </div>
       )}
+
+      <div className="mt-8">
+        <DisciplineList
+          disciplines={disciplines}
+          isLoading={isLoading}
+          error={error}
+          onEdit={openEdit}
+          onDelete={handleDelete}
+        />
+      </div>
     </div>
   );
 }

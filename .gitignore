@@ -43,13 +43,18 @@ dev.db
 .vscode/
 .idea/
 
+# deploy keys
+deploy_key*
+!deploy_key*.example
+
 # executables / compiled
 *.exe
 *.out
 *.so
 *.dll
 
-package-lock.json
+# docs sueltos
+*.pdf
 
 # agent / internal docs
 .opencode/
@@ -69,4 +74,5 @@ backend/.env
 frontend/node_modules
 frontend/dist
 frontend/.env
+
 

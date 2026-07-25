@@ -1,21 +1,14 @@
 import { useForm } from "react-hook-form";
-import type { CreateMemberInput, UpdateMemberInput, Member } from "../api/membersApi";
+import type { CreateMemberInput, Member } from "../api/membersApi";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Loader2 } from "lucide-react";
 
 type MemberFormProps = {
   member?: Member | null;
-  onSubmit: (data: CreateMemberInput | UpdateMemberInput) => void | Promise<void>;
+  onSubmit: (data: CreateMemberInput) => void | Promise<void>;
   onCancel: () => void;
   isLoading: boolean;
   error: string | null;
@@ -26,9 +19,8 @@ type FormInputs = {
   lastName: string;
   dni: string;
   birthDate: string;
-  contact: string;
-  socialFeePaid: string;
-  accumulatedDebt: number;
+  email: string;
+  phone: string;
 };
 
 export default function MemberForm({ member, onSubmit, onCancel, isLoading, error }: MemberFormProps) {
@@ -39,9 +31,8 @@ export default function MemberForm({ member, onSubmit, onCancel, isLoading, erro
       lastName: member?.lastName || "",
       dni: member?.dni || "",
       birthDate: member?.birthDate ? member.birthDate.split("T")[0] : "",
-      contact: member?.contact || "",
-      socialFeePaid: member?.socialFeePaid ? "true" : "false",
-      accumulatedDebt: member?.accumulatedDebt ?? 0,
+      email: member?.email || "",
+      phone: member?.phone || "",
     },
   });
 
@@ -51,9 +42,8 @@ export default function MemberForm({ member, onSubmit, onCancel, isLoading, erro
       lastName: data.lastName,
       dni: data.dni,
       birthDate: data.birthDate,
-      contact: data.contact || undefined,
-      socialFeePaid: data.socialFeePaid === "true",
-      accumulatedDebt: Number(data.accumulatedDebt) || 0,
+      email: data.email || undefined,
+      phone: data.phone || undefined,
     };
     onSubmit(payload);
   });
@@ -106,31 +96,30 @@ export default function MemberForm({ member, onSubmit, onCancel, isLoading, erro
         </div>
       </div>
 
-      <div className="flex flex-col gap-2">
-        <Label htmlFor="contact">Contacto (teléfono/email)</Label>
-        <Input id="contact" placeholder="341-555-1234" {...register("contact")} />
-      </div>
-
       <div className="grid grid-cols-2 gap-3">
         <div className="flex flex-col gap-2">
-          <Label htmlFor="socialFeePaid">Cuota social</Label>
-          <Select defaultValue={member?.socialFeePaid ? "true" : "false"}>
-            <SelectTrigger id="socialFeePaid">
-              <SelectValue placeholder="Seleccionar..." />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="false">Pendiente</SelectItem>
-              <SelectItem value="true">Pagada</SelectItem>
-            </SelectContent>
-          </Select>
+          <Label htmlFor="email">Email</Label>
+          <Input
+            id="email"
+            type="email"
+            placeholder="juan@ejemplo.com"
+            {...register("email", {
+              pattern: {
+                value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                message: "Email inválido",
+              },
+            })}
+            aria-invalid={errors.email ? "true" : "false"}
+          />
+          {errors.email && <p className="text-xs text-destructive">{errors.email.message}</p>}
         </div>
         <div className="flex flex-col gap-2">
-          <Label htmlFor="accumulatedDebt">Deuda acumulada ($)</Label>
+          <Label htmlFor="phone">Teléfono</Label>
           <Input
-            id="accumulatedDebt"
-            type="number"
-            step="0.01"
-            {...register("accumulatedDebt", { valueAsNumber: true })}
+            id="phone"
+            type="tel"
+            placeholder="341-555-1234"
+            {...register("phone")}
           />
         </div>
       </div>

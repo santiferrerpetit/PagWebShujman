@@ -1,23 +1,23 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
-import { useDisciplines } from "@/features/disciplines/hooks/useDisciplines";
+import { getDisciplines, getTeacherGroups, type Group } from "@/features/disciplines/api/disciplinesApi";
 import { useAttendance } from "../hooks/useAttendance";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import { toast } from "sonner";
-import { Loader2, Calendar, Users, CheckSquare, Square } from "lucide-react";
+import { Loader2, CheckSquare, Square } from "lucide-react";
 import AttendanceStats from "../components/AttendanceStats";
+
+type AttendanceClass = Group & { discipline: { id: number; name: string } };
 
 export default function AttendancePage() {
   const { user } = useAuth();
   const isProfessor = user?.role?.name === "Professor";
 
-  // Use useDisciplines hook to get classes.
-  // If user is a Professor, only fetch their classes by passing their ID.
-  const { classes, isLoadingClasses } = useDisciplines(isProfessor ? user.id : undefined);
-  
+  const [classes, setClasses] = useState<AttendanceClass[]>([]);
+  const [isLoadingClasses, setIsLoadingClasses] = useState(true);
+
   const {
     attendanceList,
     setAttendanceList,
@@ -29,14 +29,40 @@ export default function AttendancePage() {
 
   // Page layout state
   const [activeTab, setActiveTab] = useState<"take" | "reports">("take");
-  
+
   // Selection state
   const [selectedClassId, setSelectedClassId] = useState<string>("");
   const [selectedDate, setSelectedDate] = useState<string>(
     new Date().toISOString().split("T")[0]
   );
-  
+
   const [isSaving, setIsSaving] = useState(false);
+
+  // Load classes: professors only see their own; admins see every group across disciplines
+  useEffect(() => {
+    let mounted = true;
+    async function loadClasses() {
+      setIsLoadingClasses(true);
+      try {
+        if (isProfessor) {
+          const groups = await getTeacherGroups();
+          if (mounted) setClasses(groups as AttendanceClass[]);
+        } else {
+          const disciplines = await getDisciplines();
+          const groups = disciplines.flatMap((d) =>
+            d.groupClasses.map((g) => ({ ...g, discipline: { id: d.id, name: d.name } }))
+          );
+          if (mounted) setClasses(groups);
+        }
+      } finally {
+        if (mounted) setIsLoadingClasses(false);
+      }
+    }
+    loadClasses();
+    return () => {
+      mounted = false;
+    };
+  }, [isProfessor]);
 
   // Set default class if available
   useEffect(() => {
@@ -240,8 +266,8 @@ export default function AttendancePage() {
                     </div>
                   ) : attendanceList.length === 0 ? (
                     <div className="text-center py-12 text-muted-foreground text-sm border border-dashed rounded-lg">
-                      No hay alumnos inscriptos en esta clase. 
-                      {!isProfessor && " Agrégalos en la sección de Clases y Disciplinas."}
+                      No hay alumnos inscriptos en esta clase.
+                      {!isProfessor && " Agrégalos en la sección de Disciplinas."}
                     </div>
                   ) : (
                     <div className="border rounded-md overflow-hidden bg-card">

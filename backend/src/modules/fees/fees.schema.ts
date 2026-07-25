@@ -1,9 +1,13 @@
 import { z } from "zod";
 
+const categoryEnum = z.enum(["Menor", "Infantil", "Juvenil", "Adulto", "Senior"]);
+
 export const createFeeSchema = z.object({
-  name: z.string().min(1, "El nombre es requerido"),
+  name: z.string().min(1, "El nombre es requerido").max(200),
   amount: z.coerce.number().positive("El monto debe ser mayor a 0"),
-  description: z.string().optional(),
+  category: categoryEnum,
+  disciplineId: z.coerce.number().int().positive("La disciplina es requerida"),
+  description: z.string().max(500).optional().or(z.literal("")),
   active: z.coerce.boolean().default(true),
 });
 

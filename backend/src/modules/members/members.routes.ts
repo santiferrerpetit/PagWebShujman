@@ -8,6 +8,7 @@ import {
   create,
   update,
   remove,
+  toggleActive,
 } from "./members.controller";
 import { createMemberSchema, updateMemberSchema, memberIdSchema } from "./members.schema";
 
@@ -18,5 +19,6 @@ router.get("/:id", authenticateToken, requireAdmin, validate(memberIdSchema, "pa
 router.post("/", authenticateToken, requireAdmin, validate(createMemberSchema), create);
 router.put("/:id", authenticateToken, requireAdmin, validate(memberIdSchema, "params"), validate(updateMemberSchema), update);
 router.delete("/:id", authenticateToken, requireAdmin, validate(memberIdSchema, "params"), remove);
+router.post("/:id/toggle-active", authenticateToken, requireAdmin, validate(memberIdSchema, "params"), toggleActive);
 
 export default router;

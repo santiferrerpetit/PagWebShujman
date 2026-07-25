@@ -1,11 +1,19 @@
 import prisma from "../../lib/prisma";
 import { AppError } from "../../lib/AppError";
+import { getCategoryFromBirthDate } from "../../lib/category";
 import type { CreateMemberInput, UpdateMemberInput } from "./members.schema";
 
-function calculateDebt(memberFees: { paid: boolean; fee: { amount: any } }[]): number {
-  return memberFees
+function calculateTotalDebt(
+  memberFees: { paid: boolean; fee: { amount: any } }[],
+  memberSocialFees: { paid: boolean; amount: any }[]
+): number {
+  const sportsDebt = memberFees
     .filter((mf) => !mf.paid)
     .reduce((sum, mf) => sum + Number(mf.fee.amount), 0);
+  const socialDebt = memberSocialFees
+    .filter((msf) => !msf.paid)
+    .reduce((sum, msf) => sum + Number(msf.amount), 0);
+  return sportsDebt + socialDebt;
 }
 
 export async function getAllMembers() {
@@ -15,13 +23,16 @@ export async function getAllMembers() {
       memberFees: {
         include: { fee: { select: { amount: true } } },
       },
+      memberSocialFees: {
+        include: { socialFee: { select: { category: true } } },
+      },
     },
   });
 
-  // Calcular deuda real como suma de aranceles pendientes
   return members.map((member) => ({
     ...member,
-    accumulatedDebt: calculateDebt(member.memberFees),
+    category: getCategoryFromBirthDate(member.birthDate),
+    accumulatedDebt: calculateTotalDebt(member.memberFees, member.memberSocialFees),
   }));
 }
 
@@ -43,6 +54,9 @@ export async function getMemberById(id: number) {
       memberFees: {
         include: { fee: { select: { amount: true } } },
       },
+      memberSocialFees: {
+        include: { socialFee: { select: { category: true } } },
+      },
     },
   });
 
@@ -50,7 +64,8 @@ export async function getMemberById(id: number) {
 
   return {
     ...member,
-    accumulatedDebt: calculateDebt(member.memberFees),
+    category: getCategoryFromBirthDate(member.birthDate),
+    accumulatedDebt: calculateTotalDebt(member.memberFees, member.memberSocialFees),
   };
 }
 
@@ -62,17 +77,38 @@ export async function createMember(data: CreateMemberInput) {
     throw new AppError("Ya existe un socio con ese DNI", "DNI_EXISTS", 400);
   }
 
-  return prisma.member.create({
+  const member = await prisma.member.create({
     data: {
       firstName: data.firstName,
       lastName: data.lastName,
       dni: data.dni,
       birthDate: new Date(data.birthDate),
-      contact: data.contact,
-      socialFeePaid: data.socialFeePaid ?? false,
-      accumulatedDebt: data.accumulatedDebt ?? 0,
+      email: data.email || null,
+      phone: data.phone || null,
+      isActive: data.isActive ?? true,
     },
   });
+
+  // Asignar cuota social automáticamente para el mes/año actual
+  const category = getCategoryFromBirthDate(member.birthDate);
+  const socialFee = await prisma.socialFee.findUnique({
+    where: { category },
+  });
+
+  if (socialFee && member.isActive) {
+    const now = new Date();
+    await prisma.memberSocialFee.create({
+      data: {
+        memberId: member.id,
+        socialFeeId: socialFee.id,
+        periodMonth: now.getMonth() + 1,
+        periodYear: now.getFullYear(),
+        amount: socialFee.amount,
+      },
+    });
+  }
+
+  return member;
 }
 
 export async function updateMember(id: number, data: UpdateMemberInput) {
@@ -85,18 +121,34 @@ export async function updateMember(id: number, data: UpdateMemberInput) {
     }
   }
 
-  return prisma.member.update({
+  const updated = await prisma.member.update({
     where: { id },
     data: {
       firstName: data.firstName,
       lastName: data.lastName,
       dni: data.dni,
       birthDate: data.birthDate ? new Date(data.birthDate) : undefined,
-      contact: data.contact,
-      socialFeePaid: data.socialFeePaid,
-      accumulatedDebt: data.accumulatedDebt,
+      email: data.email,
+      phone: data.phone,
+      isActive: data.isActive,
     },
   });
+
+  return updated;
+}
+
+export async function toggleMemberActive(id: number) {
+  const member = await prisma.member.findUnique({ where: { id } });
+  if (!member) {
+    throw new AppError("Socio no encontrado", "MEMBER_NOT_FOUND", 404);
+  }
+
+  const updated = await prisma.member.update({
+    where: { id },
+    data: { isActive: !member.isActive },
+  });
+
+  return updated;
 }
 
 export async function deleteMember(id: number) {
