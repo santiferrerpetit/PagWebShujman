@@ -9,6 +9,7 @@ import {
   Clock,
   Package,
   Wrench,
+  CheckSquare,
 } from "lucide-react";
 
 const modules = [
@@ -31,6 +32,13 @@ const modules = [
     description: "Crea grupos por deporte y gestiona horarios de práctica.",
     icon: Clock,
     to: "/disciplines",
+    available: true,
+  },
+  {
+    title: "Asistencias",
+    description: "Toma asistencia diaria a los alumnos y consulta estadísticas.",
+    icon: CheckSquare,
+    to: "/attendance",
     available: true,
   },
   {

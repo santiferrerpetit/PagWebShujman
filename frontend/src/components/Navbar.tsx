@@ -76,6 +76,13 @@ export default function Navbar() {
                     Disciplinas
                   </Link>
                 </li>
+                {(user.role?.name === "Administrator" || user.role?.name === "Professor") && (
+                  <li>
+                    <Link to="/attendance" className={`${navLinkBase} ${isActive("/attendance") ? navLinkActive : navLinkInactive}`}>
+                      Asistencias
+                    </Link>
+                  </li>
+                )}
                 <li className="ml-2">
                   <DropdownMenu>
                     <DropdownMenuTrigger render={<Button variant="ghost" size="sm" className="gap-1" />}>
