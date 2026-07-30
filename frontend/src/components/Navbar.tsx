@@ -83,6 +83,13 @@ export default function Navbar() {
                     </Link>
                   </li>
                 )}
+                {user.role?.name === "Administrator" && (
+                  <li>
+                    <Link to="/salaries" className={`${navLinkBase} ${isActive("/salaries") ? navLinkActive : navLinkInactive}`}>
+                      Salarios
+                    </Link>
+                  </li>
+                )}
                 <li className="ml-2">
                   <DropdownMenu>
                     <DropdownMenuTrigger render={<Button variant="ghost" size="sm" className="gap-1" />}>

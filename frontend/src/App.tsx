@@ -17,6 +17,7 @@ const DisciplinesPage = lazy(() => import("@/features/disciplines/pages/Discipli
 const DisciplineDetailPage = lazy(() => import("@/features/disciplines/pages/DisciplineDetailPage"));
 const GroupDetailPage = lazy(() => import("@/features/disciplines/pages/GroupDetailPage"));
 const AttendancePage = lazy(() => import("@/features/attendance/pages/AttendancePage"));
+const SalaryPage = lazy(() => import("@/features/salary/pages/SalaryPage"));
 
 function LoadingFallback() {
   return (
@@ -96,6 +97,14 @@ function AnimatedRoutes() {
             element={
               <ProtectedRoute>
                 <AttendancePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/salaries"
+            element={
+              <ProtectedRoute>
+                <SalaryPage />
               </ProtectedRoute>
             }
           />

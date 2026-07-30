@@ -10,6 +10,7 @@ import {
   Package,
   Wrench,
   CheckSquare,
+  DollarSign,
 } from "lucide-react";
 
 const modules = [
@@ -54,6 +55,13 @@ const modules = [
     icon: Wrench,
     to: "#",
     available: false,
+  },
+  {
+    title: "Salarios",
+    description: "Registro de pagos de salarios con comprobantes.",
+    icon: DollarSign,
+    to: "/salaries",
+    available: true,
   },
 ];
 
