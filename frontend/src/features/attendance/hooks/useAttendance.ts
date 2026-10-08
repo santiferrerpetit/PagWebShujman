@@ -2,9 +2,10 @@ import { useState, useCallback } from "react";
 import {
   getAttendance,
   submitAttendance,
-  getAttendanceStats,
+  getAttendanceReport,
   type AttendanceRecord,
-  type ClassStats,
+  type AttendanceReport,
+  type ReportFilters,
 } from "../api/attendanceApi";
 
 export function useAttendance() {
@@ -12,9 +13,9 @@ export function useAttendance() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const [stats, setStats] = useState<ClassStats[]>([]);
-  const [isLoadingStats, setIsLoadingStats] = useState(false);
-  const [statsError, setStatsError] = useState<string | null>(null);
+  const [report, setReport] = useState<AttendanceReport | null>(null);
+  const [isLoadingReport, setIsLoadingReport] = useState(false);
+  const [reportError, setReportError] = useState<string | null>(null);
 
   const fetchAttendanceList = useCallback(async (groupClassId: number, date?: string) => {
     setIsLoading(true);
@@ -46,16 +47,15 @@ export function useAttendance() {
     }
   };
 
-  const fetchStats = useCallback(async () => {
-    setIsLoadingStats(true);
-    setStatsError(null);
+  const fetchReport = useCallback(async (filters: ReportFilters) => {
+    setIsLoadingReport(true);
+    setReportError(null);
     try {
-      const data = await getAttendanceStats();
-      setStats(data);
+      setReport(await getAttendanceReport(filters));
     } catch (err: any) {
-      setStatsError(err.message || "Error al cargar reportes de asistencia");
+      setReportError(err.message || "Error al cargar reportes de asistencia");
     } finally {
-      setIsLoadingStats(false);
+      setIsLoadingReport(false);
     }
   }, []);
 
@@ -67,9 +67,9 @@ export function useAttendance() {
     fetchAttendanceList,
     saveAttendance,
     
-    stats,
-    isLoadingStats,
-    statsError,
-    fetchStats,
+    report,
+    isLoadingReport,
+    reportError,
+    fetchReport,
   };
 }

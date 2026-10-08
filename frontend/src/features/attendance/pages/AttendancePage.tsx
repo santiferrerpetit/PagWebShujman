@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { Loader2, CheckSquare, Square } from "lucide-react";
-import AttendanceStats from "../components/AttendanceStats";
+import AttendanceReports from "../components/AttendanceReports";
 
 type AttendanceClass = Group & { discipline: { id: number; name: string } };
 
@@ -115,7 +115,7 @@ export default function AttendancePage() {
   const selectedClassDetails = classes.find((c) => String(c.id) === selectedClassId);
 
   return (
-    <div className="flex-1 px-4 py-8 max-w-6xl mx-auto w-full">
+    <div className="flex-1 px-4 py-6 md:py-8 max-w-6xl mx-auto w-full">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
         <div>
           <h1 className="text-3xl font-light tracking-tight">Registro de Asistencia</h1>
@@ -127,10 +127,10 @@ export default function AttendancePage() {
         </div>
 
         {/* Tab Switcher */}
-        <div className="flex bg-muted rounded-lg p-1 self-start">
+        <div className="flex bg-muted rounded-lg p-1 w-full md:w-auto md:self-start">
           <button
             onClick={() => setActiveTab("take")}
-            className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all ${
+            className={`flex-1 md:flex-none px-4 py-2 md:py-1.5 rounded-md text-sm font-medium transition-all ${
               activeTab === "take"
                 ? "bg-background text-foreground shadow-sm"
                 : "text-muted-foreground hover:text-foreground"
@@ -140,7 +140,7 @@ export default function AttendancePage() {
           </button>
           <button
             onClick={() => setActiveTab("reports")}
-            className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all ${
+            className={`flex-1 md:flex-none px-4 py-2 md:py-1.5 rounded-md text-sm font-medium transition-all ${
               activeTab === "reports"
                 ? "bg-background text-foreground shadow-sm"
                 : "text-muted-foreground hover:text-foreground"
@@ -227,7 +227,7 @@ export default function AttendancePage() {
           {/* List/Checking Column */}
           <div className="lg:col-span-2">
             <Card className="h-full flex flex-col">
-              <CardHeader className="pb-3 border-b flex flex-row items-center justify-between">
+              <CardHeader className="pb-3 border-b flex flex-row flex-wrap gap-2 items-center justify-between">
                 <div>
                   <CardTitle className="text-base font-medium">Listado de Socios</CardTitle>
                   <CardDescription>Marca los socios presentes para el día seleccionado</CardDescription>
@@ -276,7 +276,7 @@ export default function AttendancePage() {
                           <tr>
                             <th className="p-3 w-12 text-center">Presente</th>
                             <th className="p-3">Socio</th>
-                            <th className="p-3">DNI</th>
+                            <th className="p-3 hidden sm:table-cell">DNI</th>
                           </tr>
                         </thead>
                         <tbody className="divide-y">
@@ -284,24 +284,25 @@ export default function AttendancePage() {
                             <tr
                               key={row.memberId}
                               onClick={() => handleTogglePresent(row.memberId)}
-                              className="hover:bg-muted/40 cursor-pointer transition-colors"
+                              className={`cursor-pointer transition-colors active:bg-muted ${row.present ? "bg-emerald-500/5" : "hover:bg-muted/40"}`}
                             >
-                              <td className="p-3 text-center" onClick={(e) => e.stopPropagation()}>
+                              <td className="p-4 md:p-3 text-center" onClick={(e) => e.stopPropagation()}>
                                 <button
                                   onClick={() => handleTogglePresent(row.memberId)}
-                                  className="text-primary hover:opacity-85 transition-opacity"
+                                  className="text-primary hover:opacity-85 transition-opacity p-1 -m-1"
+                                  aria-label={`Marcar asistencia de ${row.firstName} ${row.lastName}`}
                                 >
                                   {row.present ? (
-                                    <CheckSquare className="size-5" />
+                                    <CheckSquare className="size-6 md:size-5" />
                                   ) : (
-                                    <Square className="size-5 text-muted-foreground" />
+                                    <Square className="size-6 md:size-5 text-muted-foreground" />
                                   )}
                                 </button>
                               </td>
-                              <td className="p-3 font-medium">
+                              <td className="p-3 font-medium text-base md:text-sm">
                                 {row.firstName} {row.lastName}
                               </td>
-                              <td className="p-3 text-muted-foreground">{row.dni}</td>
+                              <td className="p-3 text-muted-foreground hidden sm:table-cell">{row.dni}</td>
                             </tr>
                           ))}
                         </tbody>
@@ -311,7 +312,7 @@ export default function AttendancePage() {
                 </div>
 
                 {attendanceList.length > 0 && (
-                  <div className="mt-6 pt-4 border-t flex flex-col md:flex-row md:items-center justify-between gap-4">
+                  <div className="mt-6 pt-4 border-t flex flex-col md:flex-row md:items-center justify-between gap-4 sticky bottom-0 bg-card pb-3 md:static md:pb-0">
                     <div className="text-sm text-muted-foreground">
                       Resumen:{" "}
                       <span className="font-semibold text-foreground">
@@ -323,7 +324,7 @@ export default function AttendancePage() {
                       )}
                       %)
                     </div>
-                    <Button onClick={handleSave} disabled={isSaving} className="w-full md:w-auto">
+                    <Button onClick={handleSave} disabled={isSaving} size="lg" className="w-full md:w-auto">
                       {isSaving && <Loader2 className="size-4 mr-2 animate-spin" />}
                       Guardar Asistencia
                     </Button>
@@ -340,11 +341,11 @@ export default function AttendancePage() {
           <CardHeader>
             <CardTitle className="text-base font-medium">Reportes de Actividad</CardTitle>
             <CardDescription>
-              Concurrencia agregada y tasa de asistencia de cada clase grupal
+              Concurrencia por disciplina y clase, evolución diaria y socios con baja asistencia
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <AttendanceStats />
+            <AttendanceReports classes={classes} />
           </CardContent>
         </Card>
       )}

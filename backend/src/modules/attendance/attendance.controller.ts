@@ -5,6 +5,7 @@ import {
   getAttendanceList,
   saveAttendance,
   getAttendanceStats,
+  getAttendanceReport,
 } from "./attendance.service";
 
 export const listAttendance = asyncHandler(async (req: Request, res: Response) => {
@@ -47,7 +48,18 @@ export const save = asyncHandler(async (req: Request, res: Response) => {
   res.json(result);
 });
 
-export const stats = asyncHandler(async (_req: Request, res: Response) => {
-  const list = await getAttendanceStats();
+// Los profesores solo ven los datos de sus propias clases
+function professorScope(req: Request): number | undefined {
+  const loggedUser = (req as any).user;
+  return loggedUser?.roleName === "Professor" ? Number(loggedUser.id) : undefined;
+}
+
+export const stats = asyncHandler(async (req: Request, res: Response) => {
+  const list = await getAttendanceStats(professorScope(req));
   res.json(list);
+});
+
+export const report = asyncHandler(async (req: Request, res: Response) => {
+  const data = await getAttendanceReport({ ...(req.query as any), professorId: professorScope(req) });
+  res.json(data);
 });

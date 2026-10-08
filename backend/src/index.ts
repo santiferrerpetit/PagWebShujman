@@ -14,6 +14,7 @@ import usersRoutes from "./modules/users/users.routes";
 import inventoryRoutes from "./modules/inventory/inventory.routes";
 import reservationsRoutes from "./modules/reservations/reservations.routes";
 import maintenanceRoutes from "./modules/maintenance/maintenance.routes";
+import accountRoutes from "./modules/account/account.routes";
 import { errorHandler } from "./middleware/errorHandler";
 import { generalLimiter } from "./middleware/rateLimiter";
 
@@ -44,6 +45,7 @@ app.use("/api/users", usersRoutes);
 app.use("/api/inventory", inventoryRoutes);
 app.use("/api/reservations", reservationsRoutes);
 app.use("/api/maintenance", maintenanceRoutes);
+app.use("/api/account", accountRoutes);
 app.get("/api/health", (_req, res) => {
   res.json({ status: "ok", timestamp: new Date().toISOString() });
 });
@@ -62,6 +64,7 @@ app.use("/users", usersRoutes);
 app.use("/inventory", inventoryRoutes);
 app.use("/reservations", reservationsRoutes);
 app.use("/maintenance", maintenanceRoutes);
+app.use("/account", accountRoutes);
 app.get("/health", (_req, res) => {
   res.json({ status: "ok", timestamp: new Date().toISOString() });
 });
