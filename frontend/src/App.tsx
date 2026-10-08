@@ -60,7 +60,7 @@ function AnimatedRoutes() {
           <Route
             path="/members"
             element={
-              <ProtectedRoute>
+              <ProtectedRoute allowedRoles={["Administrator"]}>
                 <MembersPage />
               </ProtectedRoute>
             }
@@ -68,7 +68,7 @@ function AnimatedRoutes() {
           <Route
             path="/fees"
             element={
-              <ProtectedRoute>
+              <ProtectedRoute allowedRoles={["Administrator"]}>
                 <FeesPage />
               </ProtectedRoute>
             }
@@ -76,7 +76,7 @@ function AnimatedRoutes() {
           <Route
             path="/disciplines"
             element={
-              <ProtectedRoute>
+              <ProtectedRoute allowedRoles={["Administrator", "Professor"]}>
                 <DisciplinesPage />
               </ProtectedRoute>
             }
@@ -84,7 +84,7 @@ function AnimatedRoutes() {
           <Route
             path="/disciplines/:id"
             element={
-              <ProtectedRoute>
+              <ProtectedRoute allowedRoles={["Administrator", "Professor"]}>
                 <DisciplineDetailPage />
               </ProtectedRoute>
             }
@@ -92,7 +92,7 @@ function AnimatedRoutes() {
           <Route
             path="/groups/:id"
             element={
-              <ProtectedRoute>
+              <ProtectedRoute allowedRoles={["Administrator", "Professor"]}>
                 <GroupDetailPage />
               </ProtectedRoute>
             }
@@ -100,7 +100,7 @@ function AnimatedRoutes() {
           <Route
             path="/attendance"
             element={
-              <ProtectedRoute>
+              <ProtectedRoute allowedRoles={["Administrator", "Professor"]}>
                 <AttendancePage />
               </ProtectedRoute>
             }
@@ -115,7 +115,7 @@ function AnimatedRoutes() {
           />
           <Route path="/inventory" element={<ProtectedRoute><InventoryPage /></ProtectedRoute>} />
           <Route path="/reservations" element={<ProtectedRoute><ReservationsPage /></ProtectedRoute>} />
-          <Route path="/maintenance" element={<ProtectedRoute><MaintenancePage /></ProtectedRoute>} />
+          <Route path="/maintenance" element={<ProtectedRoute allowedRoles={["Administrator", "Maintenance"]}><MaintenancePage /></ProtectedRoute>} />
         </Routes>
       </motion.div>
     </AnimatePresence>

@@ -54,5 +54,11 @@ JWT_SECRET="tu-clave-secreta-aqui"
 ## Características
 
 - Registro e inicio de sesión de usuarios
-- Protección de rutas con JWT
+- Protección de rutas con JWT y permisos por rol (Administrador, Profesor, Mantenimiento)
+- Panel principal que muestra solo los módulos de cada rol
+- Socios, cuotas sociales y aranceles deportivos, con estado de cuenta y panel de morosidad
+- Disciplinas, grupos y horarios
+- Toma de asistencia (optimizada para celular) y reportes de concurrencia con filtros y exportación CSV
+- Inventario con préstamos, reservas de canchas y salas, y bitácora de mantenimiento
+- Salarios con comprobantes
 - Diseño moderno con Tailwind CSS

@@ -14,19 +14,31 @@ import {
   CalendarDays,
 } from "lucide-react";
 
-const modules = [
+type DashboardModule = {
+  title: string;
+  description: string;
+  icon: typeof Users;
+  to: string;
+  /** Roles que ven el módulo; si se omite, lo ven todos */
+  roles?: string[];
+  available: boolean;
+};
+
+const modules: DashboardModule[] = [
   {
     title: "Socios",
     description: "Gestiona el registro, edición y seguimiento de socios del club.",
     icon: Users,
     to: "/members",
+    roles: ["Administrator"],
     available: true,
   },
   {
-    title: "Aranceles",
-    description: "Gestiona aranceles deportivos y su asignación a socios.",
+    title: "Cuotas y Estado de Cuenta",
+    description: "Controla deudas, pagos y morosidad de socios.",
     icon: Receipt,
     to: "/fees",
+    roles: ["Administrator"],
     available: true,
   },
   {
@@ -34,13 +46,15 @@ const modules = [
     description: "Crea grupos por deporte y gestiona horarios de práctica.",
     icon: Clock,
     to: "/disciplines",
+    roles: ["Administrator", "Professor"],
     available: true,
   },
   {
     title: "Asistencias",
-    description: "Toma asistencia diaria a los alumnos y consulta estadísticas.",
+    description: "Toma asistencia diaria y consulta reportes de concurrencia.",
     icon: CheckSquare,
     to: "/attendance",
+    roles: ["Administrator", "Professor"],
     available: true,
   },
   {
@@ -62,6 +76,7 @@ const modules = [
     description: "Bitácora de reparaciones y estado de instalaciones.",
     icon: Wrench,
     to: "/maintenance",
+    roles: ["Administrator", "Maintenance"],
     available: true,
   },
   {
@@ -69,9 +84,16 @@ const modules = [
     description: "Registro de pagos de salarios con comprobantes.",
     icon: DollarSign,
     to: "/salaries",
+    roles: ["Administrator"],
     available: true,
   },
 ];
+
+const ROLE_LABELS: Record<string, string> = {
+  Administrator: "Administrador",
+  Professor: "Profesor",
+  Maintenance: "Mantenimiento",
+};
 
 const container = {
   hidden: { opacity: 0 },
@@ -88,6 +110,8 @@ const cardMotion = {
 
 export default function DashboardPage() {
   const { user } = useAuth();
+  const roleName = user?.role?.name;
+  const visibleModules = modules.filter((m) => !m.roles || (roleName && m.roles.includes(roleName)));
 
   return (
     <div className="flex-1 px-4 py-8 max-w-6xl mx-auto w-full">
@@ -96,7 +120,7 @@ export default function DashboardPage() {
           Bienvenido{user ? `, ${user.firstName}` : ""}
         </h1>
         <p className="text-muted-foreground mt-1 text-sm">
-          Rol: <span className="text-primary font-medium">{user?.role?.name ?? "Sin rol"}</span>
+          Rol: <span className="text-primary font-medium">{ROLE_LABELS[roleName ?? ""] ?? roleName ?? "Sin rol"}</span>
         </p>
       </div>
 
@@ -106,7 +130,7 @@ export default function DashboardPage() {
         animate="show"
         className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5"
       >
-        {modules.map((mod) => {
+        {visibleModules.map((mod) => {
           const Icon = mod.icon;
           const content = (
             <Card className="h-full hover:border-primary/30 transition-colors">

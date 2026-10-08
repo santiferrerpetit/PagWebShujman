@@ -35,7 +35,7 @@ export default function Navbar() {
             <span className="text-sm font-semibold tracking-tight">Gestión de Clubes</span>
           </Link>
 
-          <ul className="flex items-center gap-1">
+          <ul className="flex items-center gap-1 overflow-x-auto">
             {!user ? (
               <>
                 <li>
@@ -61,21 +61,27 @@ export default function Navbar() {
                     Panel
                   </Link>
                 </li>
+                {user.role?.name === "Administrator" && (
                 <li>
                   <Link to="/members" className={`${navLinkBase} ${isActive("/members") ? navLinkActive : navLinkInactive}`}>
                     Socios
                   </Link>
                 </li>
+                )}
+                {user.role?.name === "Administrator" && (
                 <li>
                   <Link to="/fees" className={`${navLinkBase} ${isActive("/fees") ? navLinkActive : navLinkInactive}`}>
-                    Aranceles
+                    Cuotas
                   </Link>
                 </li>
+                )}
+                {(user.role?.name === "Administrator" || user.role?.name === "Professor") && (
                 <li>
                   <Link to="/disciplines" className={`${navLinkBase} ${isActive("/disciplines") ? navLinkActive : navLinkInactive}`}>
                     Disciplinas
                   </Link>
                 </li>
+                )}
                 <li>
                   <Link to="/inventory" className={`${navLinkBase} ${isActive("/inventory") ? navLinkActive : navLinkInactive}`}>
                     <Package className="inline size-3.5 mr-1" />Inventario
