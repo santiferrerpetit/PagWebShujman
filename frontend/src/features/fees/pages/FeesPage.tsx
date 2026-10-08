@@ -22,7 +22,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { toast } from "sonner";
 import { Plus, Loader2, Pencil, Trash2, CalendarDays } from "lucide-react";
+import AccountStatement from "@/features/fees/components/AccountStatement";
 import type { SocialFee } from "@/features/fees/api/socialFeesApi";
 
 const CATEGORIES = ["Menor", "Infantil", "Juvenil", "Adulto", "Senior"];
@@ -30,6 +32,7 @@ const CATEGORIES = ["Menor", "Infantil", "Juvenil", "Adulto", "Senior"];
 export default function FeesPage() {
   const { fees, isLoading, error, addFee, editFee, removeFee } = useSocialFees();
   const { generate, isLoading: generating } = useGenerateMonthFees();
+  const [tab, setTab] = useState<"config" | "accounts">("accounts");
   const [showForm, setShowForm] = useState(false);
   const [editingFee, setEditingFee] = useState<SocialFee | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
@@ -95,20 +98,36 @@ export default function FeesPage() {
     const result = await generate({ month: now.getMonth() + 1, year: now.getFullYear() });
     if (result) {
       window.dispatchEvent(new Event("members:refresh"));
-      alert(`Se generaron ${result.created} cuotas sociales para el mes actual.`);
+      toast.success(`Se generaron ${result.created} cuotas sociales para el mes actual.`);
     }
   };
 
   return (
     <div className="flex-1 px-4 py-8 max-w-6xl mx-auto w-full">
       <div className="mb-8">
-        <h1 className="text-3xl font-light tracking-tight">Cuotas Sociales</h1>
+        <h1 className="text-3xl font-light tracking-tight">Cuotas y Estado de Cuenta</h1>
         <p className="text-muted-foreground mt-1 text-sm">
-          Configura los montos por categoría y genera las cuotas del mes
+          Controla deudas y pagos de los socios, y configura los montos por categoría
         </p>
       </div>
 
-      <div className="space-y-6">
+      <div className="flex bg-muted rounded-lg p-1 w-full sm:w-auto sm:inline-flex mb-6">
+        {([["accounts", "Estado de cuenta"], ["config", "Configuración de cuotas"]] as const).map(([key, label]) => (
+          <button
+            key={key}
+            onClick={() => setTab(key)}
+            className={`flex-1 sm:flex-none px-4 py-2 sm:py-1.5 rounded-md text-sm font-medium transition-all ${
+              tab === key ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+
+      {tab === "accounts" && <AccountStatement />}
+
+      {tab === "config" && <div className="space-y-6">
         <div className="flex items-center justify-between">
           <Button onClick={openCreate} variant="outline">
             <Plus data-icon="inline-start" />
@@ -218,7 +237,7 @@ export default function FeesPage() {
             )}
           </CardContent>
         </Card>
-      </div>
+      </div>}
     </div>
   );
 }
